@@ -49,6 +49,7 @@ class PyPetsc4py(Package):
     extends('python')
     
     depends_on('py-cython', type='build')
+    depends_on('py-mpi4py')
     depends_on('py-numpy')
     depends_on('petsc@3.7:3.7.99', when='@3.7:3.7.99')
     depends_on('petsc@3.6:3.6.99', when='@3.6:3.6.99')

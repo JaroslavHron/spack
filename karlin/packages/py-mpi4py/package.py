@@ -27,14 +27,30 @@ from spack import *
 class PyMpi4py(Package):
     """This package provides Python bindings for the Message Passing Interface (MPI) standard. It is implemented on top of the MPI-1/MPI-2 specification and exposes an API which grounds on the standard MPI-2 C++ bindings."""
     homepage = "https://pypi.python.org/pypi/mpi4py"
-    url      = "https://pypi.python.org/packages/source/m/mpi4py/mpi4py-1.3.1.tar.gz"
+    url      = "https://bitbucket.org/mpi4py/"
 
-    version('2.0.0', '4f7d8126d7367c239fd67615680990e3')
-    version('1.3.1', 'dbe9d22bdc8ed965c23a7ceb6f32fc3c')
+    version('1.3.1', git='https://bitbucket.org/mpi4py/mpi4py.git', tag='1.3.1')
+    version('2.0.0', git='https://bitbucket.org/mpi4py/mpi4py.git', tag='2.0.0')
 
     extends('python')
+    depends_on('python')
     depends_on('py-setuptools', type='build')
+    depends_on('py-cython', type='build')
     depends_on('mpi')
+    depends_on('py-numpy')
 
     def install(self, spec, prefix):
-        python('setup.py', 'install', '--prefix=%s' % prefix)
+        with open('mpi.cfg', 'w') as f:
+            f.write('[mpi]\n')
+            f.write('mpi_dir={0}\n'.format(spec['mpi'].prefix))
+            f.write('libraries={0} {1}\n'.format('mpi','open-pal'))
+            f.write('include_dirs={0}\n'.format(spec['mpi'].prefix.include))
+            f.write('library_dirs={0}\n'.format(spec['mpi'].prefix.lib))
+            #f.write('runtime_library_dirs={0}\n'.format(spec['mpi'].prefix.lib))
+            #f.write('rpath={0}\n'.format(spec['mpi'].prefix.lib))
+            #f.write('extra_compile_args   = -L{0}\n'.format(spec['mpi'].prefix.lib))
+            #f.write('extra_link_args      = -L{0}\n'.format(spec['mpi'].prefix.lib))
+            #f.write('extra_objects        =\n')
+            
+        python('setup.py', 'build', '--mpi=mpi') #, '--configure')
+        python('setup.py', 'install', '--prefix={0}'.format(prefix))

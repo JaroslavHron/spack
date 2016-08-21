@@ -40,7 +40,7 @@ class Scotch(Package):
     version('5.1.10b', 'f587201d6cf5cf63527182fbfba70753')
 
     #patch('fix_makefile_esmumps.patch', level=2)
-    patch('fix_makefile_esmumps6.patch', level=1)
+    patch('fix_makefile_esmumps6.patch', level=2)
     
     variant('mpi', default=True, description='Activate the compilation of parallel libraries')
     variant('compression', default=True, description='Activate the posibility to use compressed files')

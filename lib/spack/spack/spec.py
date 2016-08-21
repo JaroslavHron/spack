@@ -167,6 +167,7 @@ def colorize_spec(spec):
     """Returns a spec colorized according to the colors specified in
        color_formats."""
     class insert_color:
+
         def __init__(self):
             self.last = None
 
@@ -187,6 +188,7 @@ class CompilerSpec(object):
     """The CompilerSpec field represents the compiler or range of compiler
        versions that a package should be built with.  CompilerSpecs have a
        name and a version list. """
+
     def __init__(self, *args):
         nargs = len(args)
         if nargs == 1:
@@ -297,6 +299,7 @@ class DependencySpec(object):
     - spec: the spack.spec.Spec description of a dependency.
     - deptypes: strings representing the type of dependency this is.
     """
+
     def __init__(self, spec, deptypes):
         self.spec = spec
         self.deptypes = deptypes
@@ -318,6 +321,7 @@ class VariantSpec(object):
        on the particular package being built, and each named variant can
        be enabled or disabled.
     """
+
     def __init__(self, name, value):
         self.name = name
         self.value = value
@@ -329,11 +333,10 @@ class VariantSpec(object):
         return VariantSpec(self.name, self.value)
 
     def __str__(self):
-        if self.value in [True, False]:
-            out = '+' if self.value else '~'
-            return out + self.name
+        if type(self.value) == bool:
+            return '{0}{1}'.format('+' if self.value else '~', self.name)
         else:
-            return ' ' + self.name + "=" + self.value
+            return ' {0}={1}'.format(self.name, self.value)
 
 
 class VariantMap(HashableMap):
@@ -448,9 +451,9 @@ class FlagMap(HashableMap):
         sorted_keys = filter(
             lambda flag: self[flag] != [], sorted(self.keys()))
         cond_symbol = ' ' if len(sorted_keys) > 0 else ''
-        return cond_symbol + ' '.join(str(key) + '=\"' + ' '.join(str(f)
-                                      for f in self[key]) + '\"'
-                                      for key in sorted_keys)
+        return cond_symbol + ' '.join(
+            str(key) + '=\"' + ' '.join(
+                str(f) for f in self[key]) + '\"' for key in sorted_keys)
 
 
 class DependencyMap(HashableMap):
@@ -1606,8 +1609,8 @@ class Spec(object):
             raise UnsatisfiableSpecNameError(self.name, other.name)
 
         if (other.namespace is not None and
-           self.namespace is not None and
-           other.namespace != self.namespace):
+                self.namespace is not None and
+                other.namespace != self.namespace):
             raise UnsatisfiableSpecNameError(self.fullname, other.fullname)
 
         if not self.versions.overlaps(other.versions):
@@ -1761,8 +1764,8 @@ class Spec(object):
 
         # namespaces either match, or other doesn't require one.
         if (other.namespace is not None and
-            self.namespace is not None and
-           self.namespace != other.namespace):
+                self.namespace is not None and
+                self.namespace != other.namespace):
             return False
         if self.versions and other.versions:
             if not self.versions.satisfies(other.versions, strict=strict):
@@ -1857,7 +1860,7 @@ class Spec(object):
         # compatible with mpich2)
         for spec in self.virtual_dependencies():
             if (spec.name in other_index and
-               not other_index.providers_for(spec)):
+                    not other_index.providers_for(spec)):
                 return False
 
         for spec in other.virtual_dependencies():

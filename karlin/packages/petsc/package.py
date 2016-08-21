@@ -45,11 +45,12 @@ class Petsc(Package):
     variant('complex', default=False, description='Build with complex numbers')
     variant('debug',   default=False, description='Compile in debug mode')
 
-    download_libs=['superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch', 'metis', 'parmetis']
+    download_libs=['superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch']
 
     for lib in download_libs:
         variant(lib, default=True, description="Compile with internal {0} library".format(lib))
 
+    variant('metis',   default=True,  description='Activates support for metis and parmetis')
     variant('hdf5',    default=True,  description='Activates support for HDF5 (only parallel)')
     variant('boost',   default=True,  description='Activates support for Boost')
 
@@ -59,13 +60,15 @@ class Petsc(Package):
     depends_on('mpi', when='+mpi')
 
     # Build dependencies
-    depends_on('python @2.6:2.7')
+    depends_on('python@2.6:2.7')
 
     # Other dependencies
     depends_on('boost', when='+boost')
     depends_on('flex', when='+ptscotch')
     depends_on('hdf5', when='+hdf5')
-
+    depends_on('metis@5:', when='+metis')
+    depends_on('parmetis', when='+metis+mpi')
+            
     def mpi_dependent_options(self):
         if '~mpi' in self.spec:
             compiler_opts = [
@@ -98,8 +101,6 @@ class Petsc(Package):
             ]
         return compiler_opts
 
-#COMPILER+= CC=$(MPI_CC) CXX=$(MPI_CXX) FC=$(MPI_FC) F77=$(MPI_F77) F90=$(MPI_F90)
-
     def install(self, spec, prefix):
         options = ['--with-ssl=0','--with-x=0','--with-pic=1','--with-single-library=1','--with-clanguage=c','--with-c++-support']
         options.extend(self.mpi_dependent_options())
@@ -110,8 +111,9 @@ class Petsc(Package):
             '--with-debugging=%s' % ('1' if '+debug' in spec else '0'),
             '--with-blas-lapack-dir=%s' % spec['lapack'].prefix
         ])
+        
         # Activates library support if needed
-        for library in ('boost', 'hdf5'):
+        for library in ('boost', 'hdf5', 'metis', 'parmetis'):
             options.append(
                 '--with-{library}={value}'.format(library=library, value=('1' if library in spec else '0'))  # NOQA: ignore=E501
             )

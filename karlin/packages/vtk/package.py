@@ -29,19 +29,26 @@ class Vtk(Package):
     available software system for 3D computer graphics, image
     processing and visualization. """
     homepage = "http://www.vtk.org"
-    url      = "http://www.vtk.org/files/release/6.1/VTK-6.1.0.tar.gz"
+    url      = "http://www.vtk.org/files/release/7.0/VTK-7.0.0.tar.gz"
 
+    @when('@6:')
+    def url_for_version(self, version):
+        return 'http://www.vtk.org/files/release/{0}/VTK-{1}.tar.gz'.format(version.up_to(2),version)
+    
+    @when('@:5.99')
+    def url_for_version(self, version):
+        return 'http://www.vtk.org/files/release/{0}/vtk-{1}.tar.gz'.format(version.up_to(2),version)
+    
     version("7.0.0", "5fe35312db5fb2341139b8e4955c367d", url="http://www.vtk.org/files/release/7.0/VTK-7.0.0.tar.gz")
-
     version("6.3.0", '0231ca4840408e9dd60af48b314c5b6d', url="http://www.vtk.org/files/release/6.3/VTK-6.3.0.tar.gz")
-
-    version('6.1.0', '25e4dfb3bad778722dcaec80cd5dab7d')
+    version('5.10.1', '264b0052e65bd6571a84727113508789', url="http://www.vtk.org/files/release/5.10/vtk-5.10.1.tar.gz")
 
     depends_on('cmake', type='build')
+    depends_on('python')
     depends_on("qt")
 
     # VTK7 defaults to OpenGL2 rendering backend
-    variant('opengl2', default=True, description='Build with OpenGL instead of OpenGL2 as rendering backend')
+    variant('opengl2', default=False, description='Build with OpenGL instead of OpenGL2 as rendering backend')
 
     def install(self, spec, prefix):
         def feature_to_bool(feature, on='ON', off='OFF'):
@@ -53,10 +60,16 @@ class Vtk(Package):
             cmake_args = [
                 "..",
                 "-DBUILD_SHARED_LIBS=ON",
+                '-DVTK_PYTHON_SETUP_ARGS:STRING=--prefix=. --root={0} --single-version-externally-managed'.format(spec['python'].prefix),
+                '-DPYTHON_EXECUTABLE:FILEPATH={0}/python'.format(spec['python'].prefix.bin),
+                '-DVTK_USE_OGGTHEORA_ENCODER=ON',
+                '-DVTK_USE_GL2PS=ON', 
+                '-DVTK_OPENGL_HAS_OSMESA=ON',
                 # Disable wrappers for other languages.
-                "-DVTK_WRAP_PYTHON=OFF",
                 "-DVTK_WRAP_JAVA=OFF",
-                "-DVTK_WRAP_TCL=OFF"]
+                "-DVTK_WRAP_TCL=OFF",
+                "-DCMAKE_INSTALL_RPATH:STRING={0}/lib/vtk-5.10".format(prefix)
+            ]
             cmake_args.extend(std_cmake_args)
 
             # Enable Qt support here.
@@ -72,7 +85,7 @@ class Vtk(Package):
             if spec['qt'].satisfies('@5'):
                 cmake_args.append("-DVTK_QT_VERSION:STRING=5")
 
-            if spec.satisfies("@6.1.0"):
+            if spec.satisfies("@:6.3.0"):
                 cmake_args.append("-DCMAKE_C_FLAGS=-DGLX_GLXEXT_LEGACY")
                 cmake_args.append("-DCMAKE_CXX_FLAGS=-DGLX_GLXEXT_LEGACY")
 
@@ -83,5 +96,5 @@ class Vtk(Package):
             make("install")
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
-        # set up PETSC_DIR for everyone using PETSc package
         spack_env.set('VTK_DIR', self.prefix)
+        #spack_env.set('VTK_DIR', "{0}/vtk-5.10".format(self.prefix.lib))

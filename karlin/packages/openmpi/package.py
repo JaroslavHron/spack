@@ -74,8 +74,8 @@ class Openmpi(Package):
     list_url = "http://www.open-mpi.org/software/ompi/"
     list_depth = 3
 
-    version('2.0.0', 'cdacc800cb4ce690c1f1273cb6366674')
     version('1.10.3', 'e2fe4513200e2aaa1500b762342c674b')
+    version('2.0.0', 'cdacc800cb4ce690c1f1273cb6366674')
     version('1.8.8', '0dab8e602372da1425e9242ae37faf8c')
 
     variant('psm', default=False, description='Build support for the PSM library.')
@@ -83,7 +83,7 @@ class Openmpi(Package):
             description='Build support for the Intel PSM2 library.')
     variant('pmi', default=True,
             description='Build support for PMI-based launchers')
-    variant('verbs', default=_verbs_dir() is not None,
+    variant('verbs', default=True,
             description='Build support for OpenFabrics verbs.')
     variant('mxm', default=False, description='Build Mellanox Messaging support')
 
@@ -98,7 +98,7 @@ class Openmpi(Package):
 
     variant('sqlite3', default=False, description='Build sqlite3 support')
 
-    variant('vt', default=True,
+    variant('vt', default=False,
             description='Build support for contributed package vt')
 
     # TODO : support for CUDA is missing
@@ -116,18 +116,21 @@ class Openmpi(Package):
         spack_env.set('MPICC',  join_path(self.prefix.bin, 'mpicc'))
         spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpic++'))
         spack_env.set('MPIF77', join_path(self.prefix.bin, 'mpif77'))
+        spack_env.set('MPIFC', join_path(self.prefix.bin, 'mpifort'))
         spack_env.set('MPIF90', join_path(self.prefix.bin, 'mpif90'))
 
         spack_env.set('OMPI_CC', spack_cc)
         spack_env.set('OMPI_CXX', spack_cxx)
         spack_env.set('OMPI_FC', spack_fc)
         spack_env.set('OMPI_F77', spack_f77)
+        spack_env.set('OMPI_F90', spack_fc)
 
     def setup_dependent_package(self, module, dep_spec):
         self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
         self.spec.mpicxx = join_path(self.prefix.bin, 'mpic++')
-        self.spec.mpifc = join_path(self.prefix.bin, 'mpif90')
+        self.spec.mpifc = join_path(self.prefix.bin, 'mpifort')
         self.spec.mpif77 = join_path(self.prefix.bin, 'mpif77')
+        self.spec.mpif90 = join_path(self.prefix.bin, 'mpif90')
 
     def setup_environment(self, spack_env, run_env):
         # As of 06/2016 there is no mechanism to specify that packages which
@@ -154,6 +157,9 @@ class Openmpi(Package):
         elif self.spec.satisfies('@1.7:'):
             return 'verbs'
 
+
+    config_extra = ['--with-cma', '--without-xpmem', '--disable-mpi-profile', '--enable-builtin-atomics', '--disable-wrapper-rpath', '--enable-mpi-ext=all']
+    
     def install(self, spec, prefix):
         config_args = ["--prefix=%s" % prefix,
                        "--with-hwloc=%s" % spec['hwloc'].prefix,

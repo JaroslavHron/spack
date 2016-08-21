@@ -57,7 +57,7 @@ class Trilinos(Package):
                             
     variant('metis',        default=True,  description='Compile with METIS and ParMETIS')
     variant('mumps',        default=False,  description='Compile with support for MUMPS solvers')
-    variant('superlu-dist', default=True,  description='Compile with SuperluDist solvers')
+    variant('superlu-dist', default=False,  description='Compile with SuperluDist solvers')
     variant('hypre',        default=True,  description='Compile with Hypre preconditioner')
     variant('hdf5',         default=True,  description='Compile with HDF5')
     variant('suite-sparse', default=True,  description='Compile with SuiteSparse solvers')
@@ -98,6 +98,7 @@ class Trilinos(Package):
     depends_on('hypre', when='+hypre')
     depends_on('hdf5+mpi', when='+hdf5')
     depends_on('python', when='+python')
+    depends_on('py-numpy', when='+python')
 
     patch('umfpack_from_suitesparse.patch')
 
@@ -276,8 +277,9 @@ class Trilinos(Package):
         # python
         if '+python' in spec:
             options.extend([
+                '-DPYTHON_EXECUTABLE:FILEPATH=%s/python' % spec['python'].prefix.bin,
                 '-DTrilinos_ENABLE_PyTrilinos:BOOL=ON'
-            ])
+             ])
         else:
             options.extend([
                 '-DTrilinos_ENABLE_PyTrilinos:BOOL=OFF'
