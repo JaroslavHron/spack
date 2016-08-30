@@ -1,0 +1,134 @@
+# -------------------------------------------------------------------------
+# This file controls default concretization preferences for Spack.
+#
+# Settings here are versioned with Spack and are intended to provide
+# sensible defaults out of the box. Spack maintainers should edit this
+# file to keep it current.
+#
+# Users can override these settings by editing the following files.
+#
+# Per-spack-instance settings (overrides defaults):
+#   $SPACK_ROOT/etc/spack/packages.yaml
+#
+# Per-user settings (overrides default and site settings):
+#   ~/.spack/packages.yaml
+# -------------------------------------------------------------------------
+packages:
+  all:
+    providers:
+      mpi: [openmpi, mpich]
+      blas: [openblas]
+      lapack: [openblas]
+  openssl:
+    paths:
+      openssl@system: /usr
+    buildable: False
+    version: [system]
+  zlib:
+    paths:
+      zlib@system: /usr
+    buildable: False
+    version: [system]
+  bzip2:
+    paths:
+      bzip2@system: /usr
+    buildable: False
+    version: [system]
+  readline:
+    paths:
+      readline@system: /usr
+    buildable: False
+    version: [system]
+  libtiff:
+    paths:
+      libtiff@system: /usr
+    buildable: False
+    version: [system]
+  libxml2:
+    paths:
+      libxml2@system: /usr
+    buildable: False
+    version: [system]
+  sqlite:
+    paths:
+      sqlite@system: /usr
+    buildable: False
+    version: [system]
+  m4:
+    paths:
+      m4@system: /usr
+    buildable: False
+    version: [system]
+  freetype:
+    paths:
+      freetype@system: /usr
+    buildable: False
+    version: [system]
+  ncurses:
+    paths:
+      ncurses@system: /usr
+    buildable: False
+    version: [system]
+  bison:
+    paths:
+      bison@system: /usr
+    buildable: False
+    version: [system]
+  tcl:
+    paths:
+      tcl@system: /usr
+    buildable: False
+    version: [system]
+  tk:
+    paths:
+      tk@system: /usr
+    buildable: False
+    version: [system]
+  pango:
+    paths:
+      pango@system: /usr
+    buildable: False
+    version: [system]
+  jpeg:
+    paths:
+      jpeg@system: /usr
+    buildable: False
+    version: [system]
+  cairo:
+    paths:
+      cairo@system: /usr
+    buildable: False
+    version: [system]
+  glib:
+    paths:
+      glib@system: /usr
+    buildable: False
+    version: [system]
+  qt:
+    paths:
+      qt@system: /usr
+    buildable: False
+    version: [system]
+  gmp:
+    paths:
+      gmp@system: /usr
+    buildable: False
+    version: [system]
+  swig:
+    paths:
+      swig@system: /usr
+    buildable: False
+    version: [system]
+  curl:
+    paths:
+      curl@system: /usr
+    buildable: False
+    version: [system]
+
+# seems broken on ubuntu 16.04.
+#  flex:
+#    paths:
+#      flex@system: /usr
+#    buildable: False
+#    version: [system]
+
