@@ -65,6 +65,9 @@ class Vtk(Package):
                 '-DVTK_USE_OGGTHEORA_ENCODER=ON',
                 '-DVTK_USE_GL2PS=ON', 
                 '-DVTK_OPENGL_HAS_OSMESA=ON',
+                #Set the following values to apropriate locations:
+                '-DOSMESA_INCLUDE_DIR=/usr/include',
+                '-DOSMESA_LIBRARY=-L/usr/lib/x86_64-linux-gnu -lOSMesa',
                 # Disable wrappers for other languages.
                 "-DVTK_WRAP_JAVA=OFF",
                 "-DVTK_WRAP_TCL=OFF",
@@ -89,7 +92,7 @@ class Vtk(Package):
                 cmake_args.append("-DCMAKE_C_FLAGS=-DGLX_GLXEXT_LEGACY")
                 cmake_args.append("-DCMAKE_CXX_FLAGS=-DGLX_GLXEXT_LEGACY")
 
-            cmake_args.append('-DVTK_RENDERING_BACKEND:STRING=%s' % feature_to_bool('+opengl2', 'OpenGL2', 'OpenGL'))
+            #cmake_args.append('-DVTK_RENDERING_BACKEND:STRING=%s' % feature_to_bool('+opengl2', 'OpenGL2', 'OpenGL'))
 
             cmake(*cmake_args)
             make()
