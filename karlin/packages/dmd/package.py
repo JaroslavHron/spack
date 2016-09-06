@@ -14,5 +14,12 @@ class Dmd(Package):
     version('2.071.1','195d9fd197301e7a6b1dd3e1ee6a0a17')
     
     def install(self, spec, prefix):
-        install_tree(join_path(self.stage.source_path,'linux/bin64'), join_path(prefix,'bin'))
-        install_tree(join_path(self.stage.source_path,'linux/lib64'), join_path(prefix,'lib64'))
+        install_tree(join_path(self.stage.source_path,'linux'), join_path(prefix,'linux'))
+        install_tree(join_path(self.stage.source_path,'man'), join_path(prefix,'man'))
+        install_tree(join_path(self.stage.source_path,'samples'), join_path(prefix,'samples'))
+        install_tree(join_path(self.stage.source_path,'html'), join_path(prefix,'html'))
+        install_tree(join_path(self.stage.source_path,'src'), join_path(prefix,'src'))
+        ln = which('ln')
+        with working_dir(prefix):
+            ln('-sf', 'linux/bin64', 'bin') 
+            ln('-sf', 'linux/lib64', 'lib') 
