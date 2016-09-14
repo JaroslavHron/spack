@@ -43,12 +43,14 @@ class Vtk(Package):
     version("6.3.0", '0231ca4840408e9dd60af48b314c5b6d', url="http://www.vtk.org/files/release/6.3/VTK-6.3.0.tar.gz")
     version('5.10.1', '264b0052e65bd6571a84727113508789', url="http://www.vtk.org/files/release/5.10/vtk-5.10.1.tar.gz")
 
-    depends_on('cmake', type='build')
-    depends_on('python')
+    depends_on("cmake", type='build')
+    depends_on("python")
     depends_on("qt")
+    depends_on("mesa+llvm+gallium", when='+sw')
 
     # VTK7 defaults to OpenGL2 rendering backend
     variant('opengl2', default=False, description='Build with OpenGL instead of OpenGL2 as rendering backend')
+    variant('sw', default=True, description='Build only software renderer')
 
     def install(self, spec, prefix):
         def feature_to_bool(feature, on='ON', off='OFF'):
@@ -66,15 +68,18 @@ class Vtk(Package):
                 '-DVTK_USE_GL2PS=ON', 
                 '-DVTK_OPENGL_HAS_OSMESA=ON',
                 #Set the following values to apropriate locations:
-                '-DOSMESA_INCLUDE_DIR=/usr/include',
-                '-DOSMESA_LIBRARY=-L/usr/lib/x86_64-linux-gnu -lOSMesa',
+                '-DOSMESA_INCLUDE_DIR={0}'.format(spec['mesa'].prefix.include),
+                '-DOSMESA_LIBRARY=-L{0} -lOSMesa',
                 # Disable wrappers for other languages.
                 "-DVTK_WRAP_JAVA=OFF",
-                "-DVTK_WRAP_TCL=OFF",
-                "-DCMAKE_INSTALL_RPATH:STRING={0}/lib/vtk-5.10".format(prefix)
+                "-DVTK_WRAP_TCL=OFF"
             ]
             cmake_args.extend(std_cmake_args)
 
+#OPENGL_INCLUDE_DIR               /usr/include
+#OPENGL_gl_LIBRARY                /usr/lib/libGL.so
+#OPENGL_glu_LIBRARY               /usr/lib/libGLU.so                                                                                                                     
+            
             # Enable Qt support here.
             cmake_args.extend([
                 "-DQT_QMAKE_EXECUTABLE:PATH=%s/qmake" % spec['qt'].prefix.bin,
@@ -92,7 +97,7 @@ class Vtk(Package):
                 cmake_args.append("-DCMAKE_C_FLAGS=-DGLX_GLXEXT_LEGACY")
                 cmake_args.append("-DCMAKE_CXX_FLAGS=-DGLX_GLXEXT_LEGACY")
 
-            #cmake_args.append('-DVTK_RENDERING_BACKEND:STRING=%s' % feature_to_bool('+opengl2', 'OpenGL2', 'OpenGL'))
+            cmake_args.append('-DVTK_RENDERING_BACKEND:STRING=%s' % feature_to_bool('+opengl2', 'OpenGL2', 'OpenGL'))
 
             cmake(*cmake_args)
             make()
@@ -100,4 +105,3 @@ class Vtk(Package):
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         spack_env.set('VTK_DIR', self.prefix)
-        #spack_env.set('VTK_DIR', "{0}/vtk-5.10".format(self.prefix.lib))

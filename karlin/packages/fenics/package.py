@@ -37,8 +37,11 @@ class Fenics(Package):
     homepage = "http://fenicsproject.org/"
     url      = "https://bitbucket.org/fenics-project"
 
-    version('2016.1.0', '92e8d00f6487a575987201f0b0d19173', url='https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-2016.1.0.tar.gz')
+    #version('2016.1.0', '92e8d00f6487a575987201f0b0d19173', url='https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-2016.1.0.tar.gz')
 
+    version('2016.1.0', git='https://bitbucket.org/fenics-project/dolfin.git', tag='dolfin-2016.1.0')
+    version('jan/fix-slow-real', git='https://bitbucket.org/fenics-project/dolfin.git', commit='c119915a877bf543e139f159274aad19a796d2a2')
+    
     resource(name='ufl', url='https://bitbucket.org/fenics-project/ufl/downloads/ufl-2016.1.0.tar.gz', md5='37433336e5c9b58d1d5ab4acca9104a7', placement='ufl')
     resource(name='fiat', url='https://bitbucket.org/fenics-project/fiat/downloads/fiat-2016.1.0.tar.gz', md5='ac0c49942831ee434301228842bcc280', placement='fiat')
     resource(name='instant', url='https://bitbucket.org/fenics-project/instant/downloads/instant-2016.1.0.tar.gz', md5='0e3dbb464c4d90d691f31f0fdd63d4f6', placement='instant')
@@ -90,7 +93,7 @@ class Fenics(Package):
     depends_on('hdf5', when='+hdf5')
     depends_on('scotch', when='+scotch')
     depends_on('trilinos', when='+trilinos')
-    depends_on('vtk@5.10.1', when='+vtk', type="alldeps")
+    depends_on('vtk+opengl2+sw', when='+vtk', type="alldeps")
     depends_on('suite-sparse', when='+suitesparse')
 
     # This are the build dependencies
