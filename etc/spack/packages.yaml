@@ -34,6 +34,11 @@ packages:
       bzip2@system: /usr
     buildable: False
     version: [system]
+  xz:
+    paths:
+      xz@system: /usr
+    buildable: False
+    version: [system]
   readline:
     paths:
       readline@system: /usr
@@ -44,11 +49,11 @@ packages:
       libtiff@system: /usr
     buildable: False
     version: [system]
-  libxml2:
-    paths:
-      libxml2@system: /usr
-    buildable: False
-    version: [system]
+#  libxml2:
+#    paths:
+#      libxml2@system: /usr
+#    buildable: False
+#    version: [system]
   sqlite:
     paths:
       sqlite@system: /usr
@@ -124,7 +129,11 @@ packages:
       curl@system: /usr
     buildable: False
     version: [system]
-
+  llvm:
+    paths:
+      llvm@system: /usr
+    buildable: False
+    version: [system]
 # seems broken on ubuntu 16.04.
 #  flex:
 #    paths:
