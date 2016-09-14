@@ -17,7 +17,7 @@ modules:
   enable:
     - tcl
   tcl:
-    naming_scheme: '{compiler.name}-{compiler.version}/{name}/{version}'
+    naming_scheme: '{name}@{version}/.{compiler.name}@{compiler.version}'
 #    all:
 #      conflict: '{name}'
 #
