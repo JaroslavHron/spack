@@ -22,8 +22,9 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
+import os
+import sys
 from spack import *
-
 
 class Fenics(Package):
     """FEniCS is organized as a collection of interoperable components
@@ -34,152 +35,175 @@ class Fenics(Package):
     range of additional components."""
 
     homepage = "http://fenicsproject.org/"
-    url      = "https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-1.6.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project"
 
-    base_url = "https://bitbucket.org/fenics-project/{pkg}/downloads/{pkg}-{version}.tar.gz"
+    releases = {
+        '2016.1.0': {
+            'dolfin': {'tag': 'dolfin-2016.1.0'},
+            'resources': {
+                'instant': {'tag': 'instant-2016.1.0'},
+                'ffc': {'tag': 'ffc-2016.1.0'},
+                'fiat': {'tag': 'fiat-2016.1.0'},
+                'ufl': {'tag': 'ufl-2016.1.0'},
+                'mshr': {'tag': 'mshr-2016.1.0'}
+            },
+        },
+        '1.6.0': {
+            'dolfin': {'tag': 'dolfin-1.6.0'},
+            'resources': {
+                'instant': {'tag': 'instant-1.6.0'},
+                'ffc': {'tag': 'ffc-1.6.0'},
+                'fiat': {'tag': 'fiat-1.6.0'},
+                'ufl': {'tag': 'ufl-1.6.0'},
+                'uflacs-deprecated': {'tag': 'uflacs-1.6.0'},
+                'mshr': {'tag': 'mshr-1.6.0'}
+            }
+        },
+        '1.7.0dev': {
+            'dolfin': {'branch': 'jan/fix-slow-real'},
+            'resources': {
+                'instant': {'commit': '406c1a85a8a90aa8a156a03b0e020abe035e056e'},
+                'ffc': {'commit': '3ac2dad202525b5e7cb04b17c9c1f5df716334bd'},
+                'fiat': {'commit': '5b7f77abcea7d7e9b67b597a32543a12547ddf9b'},
+                'ufl': {'commit': 'f3d31f2aea32141b2789a42839d0b22d188b6f2a'},
+                'uflacs-deprecated': {'commit': '073fd2bb24bef7929bf6c12b55b78904311a9245'},
+                'mshr': {'commit': '6e7cd5cd80e2d0c5c3040b19ac9f08b506be6727'}
+            }
+        }
+    }
 
-    variant('hdf5',         default=True,  description='Compile with HDF5')
-    variant('parmetis',     default=True,  description='Compile with ParMETIS')
-    variant('scotch',       default=True,  description='Compile with Scotch')
+    
+    for ver, release in releases.items():
+        version(ver, **dict(release['dolfin'], **{'git': 'https://bitbucket.org/fenics-project/dolfin'}))
+        for name, tag in release['resources'].items():
+            resource(**dict(tag, **{'name': name, 'git': 'https://bitbucket.org/fenics-project/{0}'.format(name), 'when': '@{0}'.format(ver), 'placement': name}))
+            
+    
     variant('petsc',        default=True,  description='Compile with PETSc')
+    variant('hdf5',         default=True,  description='Compile with HDF5')
+    variant('scotch',       default=True,  description='Compile with Scotch')
     variant('slepc',        default=True,  description='Compile with SLEPc')
     variant('trilinos',     default=True,  description='Compile with Trilinos')
-    variant('suite-sparse', default=True,
-            description='Compile with SuiteSparse solvers')
-    variant('vtk',          default=False, description='Compile with VTK')
-    variant('qt',           default=False, description='Compile with QT')
-    variant('mpi',          default=True,
-            description='Enables the distributed memory support')
-    variant('openmp',       default=True,
-            description='Enables the shared memory support')
-    variant('shared',       default=True,
-            description='Enables the build of shared libraries')
-    variant('debug',        default=False,
-            description='Builds a debug version of the libraries')
+    variant('suitesparse',  default=True,  description='Compile with SuiteSparse solvers')
+    variant('vtk',          default=True, description='Compile with VTK')
+    variant('mpi',          default=True,  description='Enables the distributed memory support')
+    #variant('shared',       default=True,  description='Enables the build of shared libraries')
+    variant('debug',        default=False, description='Builds a debug version of the libraries')
 
-    # not part of spack list for now
-    # variant('petsc4py',     default=True,  description='Uses PETSc4py')
-    # variant('slepc4py',     default=True,  description='Uses SLEPc4py')
-    # variant('pastix',       default=True,  description='Compile with Pastix')
+    variant('mpi4py',     default=True,  description='Uses mpi4py')
+    variant('petsc4py',     default=True,  description='Uses PETSc4py')
+    variant('slepc4py',     default=True,  description='Uses SLEPc4py')
 
-    patch('petsc-3.7.patch', when='^petsc@3.7:')
-    patch('petsc-version-detection.patch', when='@:1.6.1')
+    variant('pastix',       default=False,  description='Compile with Pastix')
+
+    variant('doc',     default=True,  description='Create docs.')
+    
+    #patch('petsc-3.7.patch', when='^petsc@3.7:')
+    #patch('petsc-version-detection.patch')
 
     extends('python')
 
-    depends_on('py-numpy')
-    depends_on('py-ply')
-    depends_on('py-six')
-    depends_on('py-sphinx@1.0.1:', when='+doc')
+    #depends_on('python@2.6:2.7', type="alldeps")
+
+    depends_on('py-mpi4py', when='+mpi', type="alldeps")
+    depends_on('petsc@3.7:', when='+petsc')
+    depends_on('slepc@3.7:', when='+slepc')
+    depends_on('py-petsc4py', when='+petsc4py', type="alldeps")
+    depends_on('py-slepc4py', when='+slepc4py', type="alldeps")
+    depends_on('py-numpy', type="alldeps")
+    depends_on('py-sympy', type="alldeps")
+    depends_on('py-ply', type="alldeps")
+    depends_on('py-six', type="alldeps")
+    depends_on('py-matplotlib', type="alldeps")
+    depends_on('py-sphinx@1.0.1:', when='+doc', type="alldeps")
     depends_on('eigen@3.2.0:')
     depends_on('boost')
+    depends_on('gmp')
+    depends_on('mpfr')
     depends_on('mpi', when='+mpi')
-    depends_on('hdf5', when='+hdf5')
-    depends_on('parmetis@4.0.2:^metis+real64', when='+parmetis')
-    depends_on('scotch~metis', when='+scotch~mpi')
-    depends_on('scotch+mpi~metis', when='+scotch+mpi')
-    depends_on('petsc@3.4:', when='+petsc')
-    depends_on('slepc@3.4:', when='+slepc')
+    depends_on('hdf5@:1.9.0', when='@:1.8+hdf5')
+    depends_on('hdf5', when='@2016.0.0:+hdf5')
+    depends_on('scotch', when='+scotch')
     depends_on('trilinos', when='+trilinos')
-    depends_on('vtk', when='+vtk')
-    depends_on('suite-sparse', when='+suite-sparse')
-    depends_on('qt', when='+qt')
+    depends_on('vtk+opengl2+sw', when='@2016.0.0:+vtk', type="alldeps")
+    depends_on('vtk@5.10.1+opengl2+sw', when='@:1.8+vtk', type="alldeps")
+    depends_on('suite-sparse', when='+suitesparse')
 
     # This are the build dependencies
-    depends_on('py-setuptools')
-    depends_on('cmake@2.8.12:')
-    depends_on('swig@3.0.3:')
-
-    releases = [
-        {
-            'version': '1.6.0',
-            'md5': '35cb4baf7ab4152a40fb7310b34d5800',
-            'resources': {
-                'ffc': '358faa3e9da62a1b1a717070217b793e',
-                'fiat': 'f4509d05c911fd93cea8d288a78a6c6f',
-                'instant': '5f2522eb032a5bebbad6597b6fe0732a',
-                'ufl': 'c40c5f04eaa847377ab2323122284016',
-            }
-        },
-        {
-            'version': '1.5.0',
-            'md5': '9b589a3534299a5e6d22c13c5eb30bb8',
-            'resources': {
-                'ffc': '343f6d30e7e77d329a400fd8e73e0b63',
-                'fiat': 'da3fa4dd8177bb251e7f68ec9c7cf6c5',
-                'instant': 'b744023ded27ee9df4a8d8c6698c0d58',
-                'ufl': '130d7829cf5a4bd5b52bf6d0955116fd',
-            }
-        },
-    ]
-
-    for release in releases:
-        version(release['version'], release['md5'], url=base_url.format(
-            pkg='dolfin', version=release['version']))
-        for name, md5 in release['resources'].items():
-            resource(name=name,
-                     url=base_url.format(pkg=name, **release),
-                     md5=md5,
-                     destination='depends',
-                     when='@{version}'.format(**release),
-                     placement=name)
+    depends_on('py-setuptools', type="alldeps")
+    depends_on('cmake@2.8.12:', type="alldeps")
+    depends_on('swig', type="alldeps")
 
     def cmake_is_on(self, option):
         return 'ON' if option in self.spec else 'OFF'
 
     def install(self, spec, prefix):
-        for package in ['ufl', 'ffc', 'fiat', 'instant']:
-            with working_dir(join_path('depends', package)):
-                python('setup.py', 'install', '--prefix=%s' % prefix)
+        os.environ['CC'] = spec['mpi'].mpicc
+        os.environ['CXX'] = spec['mpi'].mpicxx
+        os.environ['F77'] = spec['mpi'].mpif77
+        os.environ['FC'] = spec['mpi'].mpifc
 
+        os.environ['PETSC_DIR'] = spec['petsc'].prefix
+        os.environ['MPFR_DIR'] = spec['mpfr'].prefix
+        os.environ['SPHINX_DIR'] = spec['py-sphinx'].prefix
+        os.environ['HDF5_DIR'] = spec['hdf5'].prefix
+        os.environ['HDF5_ROOT'] = spec['hdf5'].prefix
+        os.environ['UFC_DIR'] = prefix
+        os.environ['FFC_DIR'] = prefix
+        
+        for name, tag in self.releases[str(self.version)]['resources'].items():
+            if name not in ['mshr'] :
+                with working_dir(name):
+                    #print str(self.version), "->", name, tag
+                    python('setup.py', 'install', '--prefix={0}'.format(prefix))
+            
         cmake_args = [
-            '-DCMAKE_BUILD_TYPE:STRING={0}'.format(
-                'Debug' if '+debug' in spec else 'RelWithDebInfo'),
-            '-DBUILD_SHARED_LIBS:BOOL={0}'.format(
-                self.cmake_is_on('+shared')),
-            '-DDOLFIN_SKIP_BUILD_TESTS:BOOL=ON',
-            '-DDOLFIN_ENABLE_OPENMP:BOOL={0}'.format(
-                self.cmake_is_on('+openmp')),
-            '-DDOLFIN_ENABLE_CHOLMOD:BOOL={0}'.format(
-                self.cmake_is_on('suite-sparse')),
-            '-DDOLFIN_ENABLE_HDF5:BOOL={0}'.format(
-                self.cmake_is_on('hdf5')),
-            '-DDOLFIN_ENABLE_MPI:BOOL={0}'.format(
-                self.cmake_is_on('mpi')),
-            '-DDOLFIN_ENABLE_PARMETIS:BOOL={0}'.format(
-                self.cmake_is_on('parmetis')),
-            '-DDOLFIN_ENABLE_PASTIX:BOOL={0}'.format(
-                self.cmake_is_on('pastix')),
-            '-DDOLFIN_ENABLE_PETSC:BOOL={0}'.format(
-                self.cmake_is_on('petsc')),
-            '-DDOLFIN_ENABLE_PETSC4PY:BOOL={0}'.format(
-                self.cmake_is_on('py-petsc4py')),
-            '-DDOLFIN_ENABLE_PYTHON:BOOL={0}'.format(
-                self.cmake_is_on('python')),
-            '-DDOLFIN_ENABLE_QT:BOOL={0}'.format(
-                self.cmake_is_on('qt')),
-            '-DDOLFIN_ENABLE_SCOTCH:BOOL={0}'.format(
-                self.cmake_is_on('scotch')),
-            '-DDOLFIN_ENABLE_SLEPC:BOOL={0}'.format(
-                self.cmake_is_on('slepc')),
-            '-DDOLFIN_ENABLE_SLEPC4PY:BOOL={0}'.format(
-                self.cmake_is_on('py-slepc4py')),
-            '-DDOLFIN_ENABLE_SPHINX:BOOL={0}'.format(
-                self.cmake_is_on('py-sphinx')),
-            '-DDOLFIN_ENABLE_TRILINOS:BOOL={0}'.format(
-                self.cmake_is_on('trilinos')),
-            '-DDOLFIN_ENABLE_UMFPACK:BOOL={0}'.format(
-                self.cmake_is_on('suite-sparse')),
-            '-DDOLFIN_ENABLE_VTK:BOOL={0}'.format(
-                self.cmake_is_on('vtk')),
-            '-DDOLFIN_ENABLE_ZLIB:BOOL={0}'.format(
-                self.cmake_is_on('zlib')),
+            '-DCMAKE_BUILD_TYPE:STRING={0}'.format('Debug' if 'debug' in spec else 'Release'),
+            '-DBUILD_SHARED_LIBS:BOOL=ON',
+            '-DDOLFIN_SKIP_BUILD_TESTS:BOOL=OFF',
+            '-DDOLFIN_AUTO_DETECT_MPI:BOOL=OFF',
+            '-DCMAKE_USE_RELATIVE_PATHS:BOOL=ON',
+            '-DPYTHON_EXECUTABLE:FILEPATH={0}/python'.format(spec['python'].prefix.bin),
+            '-DDOLFIN_ENABLE_OPENMP:BOOL=OFF',
+            '-DDOLFIN_ENABLE_CHOLMOD:BOOL={0}'.format(self.cmake_is_on('suite-sparse')),
+            '-DDOLFIN_ENABLE_MPI:BOOL={0}'.format(self.cmake_is_on('mpi')),
+            '-DDOLFIN_ENABLE_PARMETIS:BOOL=OFF',
+            '-DDOLFIN_ENABLE_PETSC:BOOL={0}'.format(self.cmake_is_on('petsc')),
+            '-DDOLFIN_ENABLE_PETSC4PY:BOOL={0}'.format(self.cmake_is_on('py-petsc4py')),
+            '-DDOLFIN_ENABLE_PYTHON:BOOL={0}'.format(self.cmake_is_on('python')),
+            '-DDOLFIN_ENABLE_SCOTCH:BOOL={0}'.format(self.cmake_is_on('scotch')),
+            '-DDOLFIN_ENABLE_SLEPC:BOOL={0}'.format(self.cmake_is_on('slepc')),
+            '-DDOLFIN_ENABLE_SLEPC4PY:BOOL={0}'.format(self.cmake_is_on('py-slepc4py')),
+            '-DDOLFIN_ENABLE_SPHINX:BOOL={0}'.format(self.cmake_is_on('py-sphinx')),
+            '-DDOLFIN_ENABLE_TRILINOS:BOOL={0}'.format(self.cmake_is_on('trilinos')),
+            '-DDOLFIN_ENABLE_UMFPACK:BOOL={0}'.format(self.cmake_is_on('suite-sparse')),
+            '-DDOLFIN_ENABLE_VTK:BOOL={0}'.format(self.cmake_is_on('vtk')),
+            '-DDOLFIN_ENABLE_ZLIB:BOOL={0}'.format(self.cmake_is_on('zlib'))
         ]
 
+        if '+hdf5' in spec:
+            cmake_args.extend([
+                '-DDOLFIN_ENABLE_HDF5:BOOL=ON',
+                '-DHDF5_DIR:PATH={0}'.format(spec['hdf5'].prefix),
+                '-DHDF5_ROOT:PATH={0}'.format(spec['hdf5'].prefix),
+                '-DHDF5_INCLUDE_DIRS={0}/include'.format(spec['hdf5'].prefix)
+            ])
+        
         cmake_args.extend(std_cmake_args)
 
         with working_dir('build', create=True):
             cmake('..', *cmake_args)
+            make()
+            make('install')
 
+        cmake_args = [
+            '-DCMAKE_BUILD_TYPE:STRING={0}'.format('Debug' if 'debug' in spec else 'Release'),
+            '-DBUILD_SHARED_LIBS:BOOL=ON',
+            '-DCMAKE_PREFIX_PATH:PATH={0}'.format(prefix),
+            '-DPYTHON_EXECUTABLE:FILEPATH={0}/python'.format(spec['python'].prefix.bin),
+        ]
+        cmake_args.extend(std_cmake_args)
+        with working_dir('mshr/build', create=True):
+            cmake('..', *cmake_args)
             make()
             make('install')

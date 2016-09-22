@@ -34,28 +34,26 @@ class Hdf5(Package):
     """
 
     homepage = "http://www.hdfgroup.org/HDF5/"
-    url = "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.13/src/hdf5-1.8.13.tar.gz"
-    list_url = "http://www.hdfgroup.org/ftp/HDF5/releases"
+    url = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.17/src/hdf5-1.8.17.tar.gz"
+    list_url = "https://support.hdfgroup.org/ftp/HDF5/releases"
     list_depth = 3
 
     version('1.10.0-patch1', '9180ff0ef8dc2ef3f61bd37a7404f295')
     version('1.10.0', 'bdc935337ee8282579cd6bc4270ad199')
+    version('1.8.17', '7d572f8f3b798a628b8245af0391a0ca', url='https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.17/src/hdf5-1.8.17.tar.gz')
     version('1.8.16', 'b8ed9a36ae142317f88b0c7ef4b9c618')
     version('1.8.15', '03cccb5b33dbe975fdcd8ae9dc021f24')
     version('1.8.13', 'c03426e9e77d7766944654280b467289')
 
-    variant('debug', default=False,
-            description='Builds a debug version of the library')
-    variant('shared', default=True,
-            description='Builds a shared version of the library')
+    variant('debug', default=False, description='Builds a debug version of the library')
+    variant('shared', default=True, description='Builds a shared version of the library')
 
     variant('cxx', default=True, description='Enable C++ support')
     variant('fortran', default=True, description='Enable Fortran support')
 
-    variant('mpi', default=False, description='Enable MPI support')
-    variant('szip', default=False, description='Enable szip support')
-    variant('threadsafe', default=False,
-            description='Enable thread-safe capabilities')
+    variant('mpi', default=True, description='Enable MPI support')
+    variant('szip', default=True, description='Enable szip support')
+    variant('threadsafe', default=False, description='Enable thread-safe capabilities')
 
     depends_on("mpi", when='+mpi')
     depends_on("szip", when='+szip')

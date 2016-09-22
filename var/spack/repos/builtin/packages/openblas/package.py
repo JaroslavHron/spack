@@ -30,19 +30,14 @@ import os
 class Openblas(Package):
     """OpenBLAS: An optimized BLAS library"""
     homepage = "http://www.openblas.net"
-    url      = "http://github.com/xianyi/OpenBLAS/archive/v0.2.15.tar.gz"
+    url      = "https://github.com/xianyi/OpenBLAS/tags"
 
-    version('0.2.18', '805e7f660877d588ea7e3792cda2ee65')
-    version('0.2.17', '664a12807f2a2a7cda4781e3ab2ae0e1')
-    version('0.2.16', 'fef46ab92463bdbb1479dcec594ef6dc')
-    version('0.2.15', 'b1190f3d3471685f17cfd1ec1d252ac9')
+    version('0.2.19', git='https://github.com/xianyi/OpenBLAS.git', tag='v0.2.19')
 
-    variant('shared', default=True,
-            description="Build shared libraries as well as static libs.")
-    variant('openmp', default=False,
-            description="Enable OpenMP support.")
-    variant('fpic',   default=True,
-            description="Build position independent code")
+    variant('shared', default=True,  description="Build shared libraries as well as static libs.")  # NOQA: ignore=E501
+    variant('openmp', default=False, description="Enable OpenMP support.")
+    variant('nothreads', default=True, description="Disable multi thread support.")
+    variant('fpic',   default=True,  description="Build position independent code")  # NOQA: ignore=E501
 
     # virtual dependency
     provides('blas')
@@ -91,6 +86,9 @@ class Openblas(Package):
 
             make_defs += ['USE_OPENMP=1']
 
+        if '+nothreads' in spec:
+            make_defs += ['USE_THREAD=0']
+            
         make_args = make_defs + make_targets
         make(*make_args)
 

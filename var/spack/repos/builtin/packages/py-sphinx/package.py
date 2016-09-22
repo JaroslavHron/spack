@@ -24,7 +24,6 @@
 ##############################################################################
 from spack import *
 
-
 class PySphinx(Package):
     """Sphinx Documentation Generator."""
     homepage = "http://sphinx-doc.org"
@@ -33,6 +32,11 @@ class PySphinx(Package):
     version('1.3.1', '8786a194acf9673464c5455b11fd4332')
 
     extends('python')
-
+    depends_on('py-six', type="alldeps")
+    depends_on('py-docutils', type="alldeps")
+    
     def install(self, spec, prefix):
         python('setup.py', 'install', '--prefix=%s' % prefix)
+
+    def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
+        spack_env.set('SPHINX_DIR', self.prefix)

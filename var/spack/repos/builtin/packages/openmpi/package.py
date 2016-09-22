@@ -42,9 +42,20 @@ def _verbs_dir():
         # Get path to executable
         path = ibv_devices.exe[0]
         # Remove executable name and "bin" directory
-        path = os.path.dirname(path)
-        path = os.path.dirname(path)
-        return path
+        return ancestor(path, n=2)
+    except:
+        return None
+
+def _slurm_dir():
+    try:
+        # Try to locate Verbs by looking for a utility in the path
+        sinfo = which("sinfo")
+        # Run it (silently) to ensure it works
+        sinfo(output=str, error=str)
+        # Get path to executable
+        path = sinfo.exe[0]
+        # Remove executable name and "bin" directory
+        return ancestor(path, n=2)
     except:
         return None
 
@@ -63,16 +74,10 @@ class Openmpi(Package):
     list_url = "http://www.open-mpi.org/software/ompi/"
     list_depth = 3
 
-    version('2.0.0', 'cdacc800cb4ce690c1f1273cb6366674')
     version('1.10.3', 'e2fe4513200e2aaa1500b762342c674b')
-    version('1.10.2', 'b2f43d9635d2d52826e5ef9feb97fd4c')
-    version('1.10.1', 'f0fcd77ed345b7eafb431968124ba16e')
-    version('1.10.0', '280cf952de68369cebaca886c5ce0304')
+    version('2.0.0', 'cdacc800cb4ce690c1f1273cb6366674')
     version('1.8.8', '0dab8e602372da1425e9242ae37faf8c')
-    version('1.6.5', '03aed2a4aa4d0b27196962a2a65fc475')
 
-    patch('ad_lustre_rwcontig_open_source.patch', when="@1.6.5")
-    patch('llnl-platforms.patch', when="@1.6.5")
     patch('configure.patch', when="@1.10.0:1.10.1")
 
     variant('psm', default=False, description='Build support for the PSM library.')
@@ -100,7 +105,6 @@ class Openmpi(Package):
 
     # TODO : support for CUDA is missing
 
-    provides('mpi@:2.2', when='@1.6.5')
     provides('mpi@:3.0', when='@1.7.5:')
     provides('mpi@:3.1', when='@2.0.0:')
 
@@ -115,18 +119,21 @@ class Openmpi(Package):
         spack_env.set('MPICC',  join_path(self.prefix.bin, 'mpicc'))
         spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpic++'))
         spack_env.set('MPIF77', join_path(self.prefix.bin, 'mpif77'))
+        spack_env.set('MPIFC', join_path(self.prefix.bin, 'mpifort'))
         spack_env.set('MPIF90', join_path(self.prefix.bin, 'mpif90'))
 
         spack_env.set('OMPI_CC', spack_cc)
         spack_env.set('OMPI_CXX', spack_cxx)
         spack_env.set('OMPI_FC', spack_fc)
         spack_env.set('OMPI_F77', spack_f77)
+        spack_env.set('OMPI_F90', spack_fc)
 
     def setup_dependent_package(self, module, dep_spec):
         self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
         self.spec.mpicxx = join_path(self.prefix.bin, 'mpic++')
-        self.spec.mpifc = join_path(self.prefix.bin, 'mpif90')
+        self.spec.mpifc = join_path(self.prefix.bin, 'mpifort')
         self.spec.mpif77 = join_path(self.prefix.bin, 'mpif77')
+        self.spec.mpif90 = join_path(self.prefix.bin, 'mpif90')
 
     def setup_environment(self, spack_env, run_env):
         # As of 06/2016 there is no mechanism to specify that packages which
@@ -153,6 +160,9 @@ class Openmpi(Package):
         elif self.spec.satisfies('@1.7:'):
             return 'verbs'
 
+
+    config_extra = ['--with-cma', '--without-xpmem', '--disable-mpi-profile', '--enable-builtin-atomics', '--disable-wrapper-rpath', '--enable-mpi-ext=all']
+    
     def install(self, spec, prefix):
         config_args = ["--prefix=%s" % prefix,
                        "--with-hwloc=%s" % spec['hwloc'].prefix,
@@ -166,7 +176,6 @@ class Openmpi(Package):
         config_args.extend([
             # Schedulers
             '--with-tm' if '+tm' in spec else '--without-tm',
-            '--with-slurm' if '+slurm' in spec else '--without-slurm',
             # Fabrics
             '--with-psm' if '+psm' in spec else '--without-psm',
             '--with-psm2' if '+psm2' in spec else '--without-psm2',
@@ -174,10 +183,15 @@ class Openmpi(Package):
             # Other options
             ('--enable-mpi-thread-multiple' if '+thread_multiple' in spec
                 else '--disable-mpi-thread-multiple'),
-            '--with-pmi' if '+pmi' in spec else '--without-pmi',
             '--with-sqlite3' if '+sqlite3' in spec else '--without-sqlite3',
             '--enable-vt' if '+vt' in spec else '--disable-vt'
         ])
+
+        if '+slurm' in spec:
+            path = _slurm_dir()
+            config_args.append('--with-slurm=%s' % path)
+            config_args.append('--with-pmi=%s' % path)
+
         if '+verbs' in spec:
             path = _verbs_dir()
             if path is not None and path not in ('/usr', '/usr/local'):

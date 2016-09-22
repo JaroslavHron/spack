@@ -46,8 +46,24 @@ class Swig(Package):
     version('1.3.40', '2df766c9e03e02811b1ab4bba1c7b9cc')
 
     depends_on('pcre')
-
+    depends_on('boost')
+    variant('python', default=True, description='Build python wrappers')
+    depends_on('python', when='+python')
+    
     def install(self, spec, prefix):
-        configure('--prefix=%s' % prefix)
+        configure_args = [
+            '--prefix={0}'.format(prefix),
+            '--with-python={0}'.format(spec['python'].prefix),
+            '--without-python3',
+            '--with-boost={0}'.format(spec['boost'].prefix)
+            ]
+
+        configure(*configure_args)
         make()
         make('install')
+        ln = which('ln')
+        with working_dir(spec.prefix.bin):
+            ln('-s', 'swig', 'swig{0}'.format(spec.version.up_to(2)))
+        
+    def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
+        spack_env.set('SWIG_DIR', self.prefix)

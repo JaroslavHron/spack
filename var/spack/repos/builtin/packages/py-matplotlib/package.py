@@ -25,14 +25,14 @@
 from spack import *
 import os
 
-
 class PyMatplotlib(Package):
     """Python plotting package."""
-    homepage = "https://pypi.python.org/pypi/matplotlib"
-    url      = "https://pypi.python.org/packages/source/m/matplotlib/matplotlib-1.4.2.tar.gz"
+    homepage = "https://matplotlib.org"
+    url      = "https://github.com/matplotlib/matplotlib/archive/v1.5.3.tar.gz"
 
-    version('1.4.2', '7d22efb6cce475025733c50487bd8898')
-    version('1.4.3', '86af2e3e3c61849ac7576a6f5ca44267')
+    version('1.5.3', '079d9d8cd9910e00ed1236fb44a518a7')
+    version('1.5.2', 'b9a6678397a477403b96c6e7f022f9d8')
+    version('1.5.1', 'b22dc4962f36aab919a7125b3b35953b')
 
     variant('gui', default=False, description='Enable GUI')
     variant('ipython', default=False, description='Enable ipython support')
@@ -66,12 +66,12 @@ class PyMatplotlib(Package):
         if str(self.version) in ['1.4.2', '1.4.3']:
             # hack to fix configuration file
             config_file = None
-            for p, d, f in os.walk(prefix.lib):
+            for p,d,f in os.walk(prefix.lib):
                 for file in f:
                     if file.find('matplotlibrc') != -1:
                         config_file = join_path(p, 'matplotlibrc')
                         print config_file
-            if config_file is None:
+            if config_file == None:
                 raise InstallError('could not find config file')
             filter_file(r'backend      : pyside',
                         'backend      : Qt4Agg',

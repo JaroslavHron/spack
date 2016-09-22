@@ -35,12 +35,13 @@ class SuiteSparse(Package):
     version('4.5.3', '8ec57324585df3c6483ad7f556afccbd')
     version('4.5.1', 'f0ea9aad8d2d1ffec66a5b6bfeff5319')
 
-    variant('tbb', default=True, description='Build with Intel TBB')
+    variant('tbb', default=False, description='Build with Intel TBB')
 
     depends_on('blas')
     depends_on('lapack')
 
     depends_on('metis@5.1.0', when='@4.5.1:')
+
     # in @4.5.1. TBB support in SPQR seems to be broken as TBB-related linkng
     # flags does not seem to be used, which leads to linking errors on Linux.
     depends_on('tbb', when='@4.5.3:+tbb')
@@ -70,7 +71,8 @@ class SuiteSparse(Package):
             'MY_METIS_LIB=-L%s -lmetis' % spec['metis'].prefix.lib,
             'MY_METIS_INC=%s' % spec['metis'].prefix.include,
         ])
-
+        #make_args.extend(['CHOLMOD_CONFIG=-DNPARTITION']) 
+     
         # Intel TBB in SuiteSparseQR
         if 'tbb' in spec:
             make_args.extend([

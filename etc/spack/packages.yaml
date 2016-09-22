@@ -19,125 +19,181 @@ packages:
       mpi: [openmpi, mpich]
       blas: [openblas]
       lapack: [openblas]
+    variants: [+shared, +fpic]
   openssl:
     paths:
-      openssl@system: /usr
+      openssl@system: /none
     buildable: False
     version: [system]
+  openmpi:
+    version: [2.0.0]
+    variants: [ +pmi, +slurm, +thread_multiple, ~tm, +verbs ]
+  openblas:
+    version: [0.2.19]
+    variants: [ +nothreads, ~openmp ]
+  arpack-ng:
+    version: [3.4.0]
+    variants: [ +mpi ]
+  boost:
+    version: [1.61.0]
+    variants: [ +atomic, +chrono, +date_time, +filesystem, +graph, +iostreams, +log, +math, +mpi, +multithreaded, +program_options, +python, +random, +regex, +serialization, +signals, +singlethreaded, +system, +thread, +timer, +wave]
+  eigen:
+    version: [3.2.7]
+    variants: [ +fftw, +metis, +mpfr, +scotch, +suitesparse]
+  hdf5:
+    version: [1.10.0-patch1]
+    variants: [+cxx, +fortran, +mpi, +szip, ~threadsafe]
+  hypre:
+    version: [2.10.1]
+    variants: [ +internal-superlu]
+  netcdf:
+    version: [4.4.1]
+    variants: [ +mpi ]
+  parmetis:
+    version: [4.0.3]
+  petsc:
+    version: [3.7.2]
+    variants: [ +blacs, +boost, +double, +hdf5, +hypre, +metis, +ml, +mpi, +mumps, +pord, +ptscotch, +scalapack, +scotch, +suitesparse, +superlu, +superlu_dist ]
+  py-mpi4py:
+    version: [2.0.0]
+  py-petsc4py:
+    version: [3.7.0]
+  py-slepc4py:
+    version: [3.7.0]
+  scotch:
+    version: [6.0.3]
+    variants: [ +compression, +esmumps, ~metis, +mpi ]
+  slepc:
+    version: [3.7.1]
+    variants: [ +arpack ]
+  trilinos:
+    version: [12.6.4]
+    variants: [ +boost, +hdf5, +hypre, +metis, ~mumps, ~python, +suite-sparse, ~superlu-dist ]
+  vtk:
+    version: [7.0.0]
+    variants: [ +opengl2, +sw ]
+  fenics:
+    version: [2016.1.0]
+    variants: [+doc, +hdf5, +mpi, +mpi4py, +petsc, +petsc4py, +scotch, +slepc, +slepc4py, +suitesparse, +trilinos, +vtk ]
   zlib:
     paths:
-      zlib@system: /usr
+      zlib@system: /none
     buildable: False
     version: [system]
   bzip2:
     paths:
-      bzip2@system: /usr
+      bzip2@system: /none
     buildable: False
     version: [system]
   xz:
     paths:
-      xz@system: /usr
+      xz@system: /none
     buildable: False
     version: [system]
   readline:
     paths:
-      readline@system: /usr
+      readline@system: /none
     buildable: False
     version: [system]
   libtiff:
     paths:
-      libtiff@system: /usr
+      libtiff@system: /none
     buildable: False
     version: [system]
 #  libxml2:
 #    paths:
-#      libxml2@system: /usr
+#      libxml2@system: /none
 #    buildable: False
 #    version: [system]
+  pkg-config:
+    paths:
+      pkg-config@system: /none
+    buildable: False
+    version: [system]
   sqlite:
     paths:
-      sqlite@system: /usr
+      sqlite@system: /none
     buildable: False
     version: [system]
   m4:
     paths:
-      m4@system: /usr
+      m4@system: /none
     buildable: False
     version: [system]
   freetype:
     paths:
-      freetype@system: /usr
+      freetype@system: /none
     buildable: False
     version: [system]
   ncurses:
     paths:
-      ncurses@system: /usr
+      ncurses@system: /none
     buildable: False
     version: [system]
   bison:
     paths:
-      bison@system: /usr
+      bison@system: /none
     buildable: False
     version: [system]
   tcl:
     paths:
-      tcl@system: /usr
+      tcl@system: /none
     buildable: False
     version: [system]
   tk:
     paths:
-      tk@system: /usr
+      tk@system: /none
     buildable: False
     version: [system]
   pango:
     paths:
-      pango@system: /usr
+      pango@system: /none
     buildable: False
     version: [system]
   jpeg:
     paths:
-      jpeg@system: /usr
+      jpeg@system: /none
     buildable: False
     version: [system]
   cairo:
     paths:
-      cairo@system: /usr
+      cairo@system: /none
     buildable: False
     version: [system]
   glib:
     paths:
-      glib@system: /usr
+      glib@system: /none
     buildable: False
     version: [system]
   qt:
     paths:
-      qt@system: /usr
+      qt@system: /none
     buildable: False
     version: [system]
   gmp:
     paths:
-      gmp@system: /usr
+      gmp@system: /none
     buildable: False
     version: [system]
-  swig:
-    paths:
-      swig@system: /usr
-    buildable: False
-    version: [system]
+#  swig:
+#    paths:
+#      swig@system: /none
+#    buildable: False
+#    version: [system]
   curl:
     paths:
-      curl@system: /usr
+      curl@system: /none
     buildable: False
     version: [system]
   llvm:
     paths:
-      llvm@system: /usr
+      llvm@system: /none
     buildable: False
     version: [system]
 # seems broken on ubuntu 16.04.
 #  flex:
 #    paths:
-#      flex@system: /usr
+#      flex@system: /none
 #    buildable: False
 #    version: [system]
 

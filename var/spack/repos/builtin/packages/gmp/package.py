@@ -43,3 +43,6 @@ class Gmp(Package):
         configure("--prefix=%s" % prefix)
         make()
         make("install")
+
+    def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
+        spack_env.set('GMPDIR', self.prefix)

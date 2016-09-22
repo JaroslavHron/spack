@@ -30,28 +30,71 @@ class Mesa(Package):
     specification - a system for rendering interactive 3D graphics."""
 
     homepage = "http://www.mesa3d.org"
-    url      = "ftp://ftp.freedesktop.org/pub/mesa/older-versions/8.x/8.0.5/MesaLib-8.0.5.tar.gz"
+    url      = "ftp://ftp.freedesktop.org/pub/mesa"
 
-    # version('10.4.4', '8d863a3c209bf5116b2babfccccc68ce')
-    version('8.0.5', 'cda5d101f43b8784fa60bdeaca4056f2')
-
-    # mesa 7.x, 8.x, 9.x
-    depends_on("libdrm@2.4.33")
-    depends_on("llvm@3.0")
+    version('12.0.2', git='https://anongit.freedesktop.org/git/mesa/mesa.git', tag='mesa-12.0.2')
+    
+    depends_on("llvm", when='+llvm')
+    depends_on("python")
     depends_on("libxml2+python")
 
-    # patch("llvm-fixes.patch") # using newer llvm
-
-    # mesa 10.x
-    # depends_on("py-mako")
-    # depends_on("flex", type='build')
-    # depends_on("bison", type='build')
+    depends_on("py-mako")
+    depends_on("flex", type='build')
+    depends_on("bison", type='build')
     # depends_on("dri2proto")
     # depends_on("libxcb")
     # depends_on("libxshmfence")
 
+    variant('llvm', default=True, description='Use llvm accelerated software renderer')
+    variant('swrast', default=False, description='Build only software renderer')
+    variant('gallium', default=False, description='Build only gallium software renderer')
+    variant('oswr', default=False, description='Use OpenSWR software rasterizer')
+    
     def install(self, spec, prefix):
-        configure("--prefix=%s" % prefix)
+
+        autoreconf = which("autoreconf")
+        autoreconf("--install", "--verbose", "--force")
+
+        config_args = ["PYTHON2=%s/python"%spec['python'].prefix.bin, \
+                       "CXXFLAGS=-DDEFAULT_SOFTWARE_DEPTH_BITS=31", \
+                       "CFLAGS=-DDEFAULT_SOFTWARE_DEPTH_BITS=31", \
+                       "--prefix=%s" % prefix,\
+                       "--disable-xvmc", \
+                       "--enable-gl", \
+                       "--enable-gles1", \
+                       "--enable-gles2", \
+                       "--enable-texture-float", \
+                       "--enable-glx-tls", \
+                       #"--disable-shared-glapi", \
+                       "--disable-dri", \
+                       "--disable-driglx-direct", \
+                       "--disable-egl", \
+                       "--with-egl-platforms="]
+
+        config_args.extend(["--enable-gallium-llvm={0}".format("yes" if '+llvm' in spec else "no")])
+
+        if '+swrast' in spec:
+            config_args.extend([
+                "--with-gallium-drivers=swrast", \
+                "--enable-osmesa", \
+                "--enable-glx=xlib", \
+                "--with-dri-drivers=swrast"])
+            
+
+        if '+gallium' in spec:
+            config_args.extend([
+                "--with-gallium-drivers=swrast", \
+                "--enable-gallium-osmesa", \
+                "--enable-glx=gallium-xlib", \
+                "--with-dri-drivers=swrast"])
+
+        if '+oswr' in spec:
+            config_args.extend([
+                "--with-gallium-drivers=swr", \
+                "--enable-osmesa", \
+                "--enable-glx=xlib"])
+
+        configure(*config_args)
 
         make()
         make("install")
