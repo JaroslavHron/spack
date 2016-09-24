@@ -19,7 +19,6 @@ packages:
       mpi: [openmpi, mpich]
       blas: [openblas]
       lapack: [openblas]
-    variants: [+shared, +fpic]
   openssl:
     paths:
       openssl@system: /none
@@ -175,11 +174,6 @@ packages:
       gmp@system: /none
     buildable: False
     version: [system]
-#  swig:
-#    paths:
-#      swig@system: /none
-#    buildable: False
-#    version: [system]
   curl:
     paths:
       curl@system: /none
