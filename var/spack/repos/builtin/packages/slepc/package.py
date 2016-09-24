@@ -36,12 +36,11 @@ class Slepc(Package):
 
     version('3.7.1', '670216f263e3074b21e0623c01bc0f562fdc0bffcd7bd42dd5d8edbe73a532c2')
     version('3.6.3', '384939d009546db37bc05ed81260c8b5ba451093bf891391d32eb7109ccff876')
-    version('3.6.2', '2ab4311bed26ccf7771818665991b2ea3a9b15f97e29fd13911ab1293e8e65df')
 
     variant('arpack', default=True, description='Enables Arpack wrappers')
 
-    depends_on('petsc@3.7:3.7.99', when='@3.7:3.7.99')
-    depends_on('petsc@3.6.3:3.6.4', when='@3.6.2:3.6.3')
+    depends_on('petsc@3.7.0:', when='@3.7.0:')
+    depends_on('petsc@3.6.0:3.6.9', when='@3.6.0:3.6.9')
     depends_on('arpack-ng', when='+arpack')
 
     patch('install_name_371.patch', when='@3.7.1')

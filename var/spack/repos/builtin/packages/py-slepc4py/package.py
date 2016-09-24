@@ -43,17 +43,19 @@ from spack import *
 class PySlepc4py(Package):
     """Slepc4py are python interface to SLEPc library."""
     homepage = "https://bitbucket.org/slepc/slepc4py"
-    url      = "https://bitbucket.org/slepc/slepc4py"
+    url      = "https://bitbucket.org/slepc/slepc4py/downloads/slepc4py-3.7.0.tar.gz"
 
-    version('3.7.0', git='https://bitbucket.org/slepc/slepc4py.git', tag='3.7.0')
+    version('3.7.0', 'c4775e88b0825c7313629c01de60ecb2')
+    version('3.6.0', '3d4c163dc482438684cdaa485ebf37fd')
+    
     extends('python')
     
     depends_on('py-cython', type='build')
-    depends_on('py-petsc4py')
+    depends_on('py-petsc4py@3.7.0:', when='@3.7.0:')
+    depends_on('py-petsc4py@:3.6.9', when='@:3.6.9')
     depends_on('py-numpy')
-    depends_on('slepc@3.7:3.7.99', when='@3.7:3.7.99')
-    depends_on('slepc@3.6:3.6.99', when='@3.6:3.6.99')
-    depends_on('slepc@3.5:3.5.99', when='@3.5:3.5.99')
+    depends_on('slepc@3.7.0:3.7.9', when='@3.7.0:')
+    depends_on('slepc@3.6.0:3.6.9', when='@:3.6.9')
 
     def install(self, spec, prefix):
         setup_py('install', '--prefix={0}'.format(prefix))

@@ -43,17 +43,18 @@ from spack import *
 class PyPetsc4py(Package):
     """Petsc4py are python interface to PETSc library."""
     homepage = "https://bitbucket.org/petsc/petsc4py"
-    url      = "https://bitbucket.org/petsc/petsc4py"
+    url      = "https://bitbucket.org/petsc/petsc4py/get/3.7.0.tar.gz"
 
-    version('3.7.0', git='https://bitbucket.org/petsc/petsc4py.git', tag='3.7.0')
+    version('3.7.0', '288eebd8bcded076f0097f66728fd768')
+    version('3.6.0', 'd8bd6cca2741faa59d5c34f8c76f60d5')
+
     extends('python')
     
     depends_on('py-cython', type='build')
     depends_on('py-mpi4py')
     depends_on('py-numpy')
-    depends_on('petsc@3.7:3.7.99', when='@3.7:3.7.99')
-    depends_on('petsc@3.6:3.6.99', when='@3.6:3.6.99')
-    depends_on('petsc@3.5:3.5.99', when='@3.5:3.5.99')
+    depends_on('petsc@3.7.0:3.7.99', when='@3.7.0')
+    depends_on('petsc@3.6.0:3.6.99', when='@3.6.0')
 
     def install(self, spec, prefix):
         setup_py('install', '--prefix={0}'.format(prefix))
