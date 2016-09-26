@@ -43,29 +43,42 @@ class Trilinos(Package):
     A unique design feature of Trilinos is its focus on packages.
     """
     homepage = "https://trilinos.org/"
-    url = "https://github.com/trilinos/Trilinos/archive/trilinos-release-12-6-4.tar.gz"
+    base_url = "https://github.com/trilinos/Trilinos/archive"
 
+    version('12.8.1', '01c0026f1e2050842857db941060ecd5')
     version('12.6.4', 'c2ea7b5aa0d10bcabdb9b9a6e3bac3ea')
+    version('12.6.3', '8de5cc00981a0ca0defea6199b2fe4c1')
+    version('12.6.2', 'dc7f9924872778798149ecadd81605a5')
     version('12.6.1', '8aecea78546e7558f63ecc9a3b2949da')
-    version('12.2.2', 'da4167310b32c4b2ebb0a8994138452b')
+    version('12.4.2', '4c25a757d86bde3531090bd900a2cea8')
+    version('12.2.1', '85d011f7f99a776a9c6c2625e8cb721c')
+    version('12.0.1', 'bcb3fdefd14d05dd6aa65ba4c5b9aa0e')
+    version('11.14.3', 'dea62e57ebe51a886bee0b10a2176969')
+    version('11.14.2', 'e7c3cdbbfe3279a8a68838b873ad6d51')
+    version('11.14.1', 'b7760b142eef66c79ed13de7c9560f81')
 
     def url_for_version(self, version):
-        base_url = "https://github.com/trilinos/Trilinos/archive"
-        parts = [str(p) for p in Version(version)]
-        dash_ver = "-".join(parts)
-        return "{0}/trilinos-release-{1}.tar.gz".format(base_url, dash_ver)
-                            
-    variant('metis',        default=True,  description='Compile with METIS and ParMETIS')
-    variant('mumps',        default=False,  description='Compile with support for MUMPS solvers')
-    variant('superlu-dist', default=False,  description='Compile with SuperluDist solvers')
-    variant('hypre',        default=True,  description='Compile with Hypre preconditioner')
+        return '%s/trilinos-release-%s.tar.gz' % \
+            (Trilinos.base_url, version.dashed)
+
+    variant('metis',        default=True,
+            description='Compile with METIS and ParMETIS')
+    variant('mumps',        default=True,
+            description='Compile with support for MUMPS solvers')
+    variant('superlu-dist', default=True,
+            description='Compile with SuperluDist solvers')
+    variant('hypre',        default=True,
+            description='Compile with Hypre preconditioner')
     variant('hdf5',         default=True,  description='Compile with HDF5')
-    variant('suite-sparse', default=True,  description='Compile with SuiteSparse solvers')
+    variant('suite-sparse', default=True,
+            description='Compile with SuiteSparse solvers')
     # not everyone has py-numpy activated, keep it disabled by default to avoid
     # configure errors
     variant('python',       default=False, description='Build python wrappers')
-    variant('shared',       default=True,  description='Enables the build of shared libraries')
-    variant('debug',        default=False, description='Builds a debug version of the libraries')
+    variant('shared',       default=True,
+            description='Enables the build of shared libraries')
+    variant('debug',        default=False,
+            description='Builds a debug version of the libraries')
     variant('boost',        default=True, description='Compile with Boost')
 
     depends_on('cmake', type='build')
@@ -76,7 +89,6 @@ class Trilinos(Package):
     depends_on('boost', when='+boost')
     depends_on('matio')
     depends_on('glm')
-    depends_on('swig')
     depends_on('metis@5:', when='+metis')
     depends_on('suite-sparse', when='+suite-sparse')
 
@@ -95,10 +107,11 @@ class Trilinos(Package):
     depends_on('scalapack', when='+mumps')
     depends_on('superlu-dist@:4.3', when='@:12.6.1+superlu-dist')
     depends_on('superlu-dist', when='@12.6.2:+superlu-dist')
-    depends_on('hypre', when='+hypre')
+    depends_on('hypre~internal-superlu', when='+hypre')
     depends_on('hdf5+mpi', when='+hdf5')
     depends_on('python', when='+python')
     depends_on('py-numpy', when='+python')
+    depends_on('swig', when='+python')
 
     patch('umfpack_from_suitesparse.patch')
 
@@ -120,6 +133,8 @@ class Trilinos(Package):
 
         mpi_bin = spec['mpi'].prefix.bin
         # Note: -DXYZ_LIBRARY_NAMES= needs semicolon separated list of names
+        blas = spec['blas'].blas_libs
+        lapack = spec['lapack'].lapack_libs
         options.extend([
             '-DTrilinos_ENABLE_ALL_PACKAGES:BOOL=ON',
             '-DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=ON',
@@ -133,12 +148,10 @@ class Trilinos(Package):
             '-DTPL_ENABLE_MPI:BOOL=ON',
             '-DMPI_BASE_DIR:PATH=%s' % spec['mpi'].prefix,
             '-DTPL_ENABLE_BLAS=ON',
-            '-DBLAS_LIBRARY_NAMES=%s' % to_lib_name(
-                spec['blas'].blas_shared_lib),
+            '-DBLAS_LIBRARY_NAMES=%s' % ';'.join(blas.names),
             '-DBLAS_LIBRARY_DIRS=%s' % spec['blas'].prefix.lib,
             '-DTPL_ENABLE_LAPACK=ON',
-            '-DLAPACK_LIBRARY_NAMES=%s' % to_lib_name(
-                spec['lapack'].lapack_shared_lib),
+            '-DLAPACK_LIBRARY_NAMES=%s' % ';'.join(lapack.names),
             '-DLAPACK_LIBRARY_DIRS=%s' % spec['lapack'].prefix.lib,
             '-DTrilinos_ENABLE_EXPLICIT_INSTANTIATION:BOOL=ON',
             '-DTrilinos_ENABLE_CXX11:BOOL=ON',
@@ -279,7 +292,7 @@ class Trilinos(Package):
             options.extend([
                 '-DPYTHON_EXECUTABLE:FILEPATH=%s/python' % spec['python'].prefix.bin,
                 '-DTrilinos_ENABLE_PyTrilinos:BOOL=ON'
-             ])
+            ])
         else:
             options.extend([
                 '-DTrilinos_ENABLE_PyTrilinos:BOOL=OFF'

@@ -10,6 +10,7 @@
 /etc/spack/licenses
 /share/spack/dotkit
 /share/spack/modules
+/share/spack/lmod
 /TAGS
 /htmlcov
 .coverage

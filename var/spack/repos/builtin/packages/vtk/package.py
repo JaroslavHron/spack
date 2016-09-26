@@ -24,6 +24,7 @@
 ##############################################################################
 from spack import *
 
+
 class Vtk(Package):
     """The Visualization Toolkit (VTK) is an open-source, freely
     available software system for 3D computer graphics, image
@@ -49,8 +50,8 @@ class Vtk(Package):
     depends_on("mesa+llvm+gallium", when='+sw')
 
     # VTK7 defaults to OpenGL2 rendering backend
-    variant('opengl2', default=False, description='Build with OpenGL instead of OpenGL2 as rendering backend')
-    variant('sw', default=True, description='Build only software renderer')
+    variant('opengl2', default=True,
+            description='Build with OpenGL instead of OpenGL2 backend')
 
     def install(self, spec, prefix):
         def feature_to_bool(feature, on='ON', off='OFF'):
@@ -71,6 +72,7 @@ class Vtk(Package):
                 '-DOSMESA_INCLUDE_DIR={0}'.format(spec['mesa'].prefix.include),
                 '-DOSMESA_LIBRARY=-L{0} -lOSMesa',
                 # Disable wrappers for other languages.
+                "-DVTK_WRAP_PYTHON=OFF",
                 "-DVTK_WRAP_JAVA=OFF",
                 "-DVTK_WRAP_TCL=OFF"
             ]

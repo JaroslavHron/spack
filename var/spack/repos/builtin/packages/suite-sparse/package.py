@@ -35,13 +35,13 @@ class SuiteSparse(Package):
     version('4.5.3', '8ec57324585df3c6483ad7f556afccbd')
     version('4.5.1', 'f0ea9aad8d2d1ffec66a5b6bfeff5319')
 
-    variant('tbb', default=False, description='Build with Intel TBB')
+    variant('tbb', default=True, description='Build with Intel TBB')
+    variant('fpic', default=True, description='Build position independent code (required to link with shared libraries)')
 
     depends_on('blas')
     depends_on('lapack')
 
     depends_on('metis@5.1.0', when='@4.5.1:')
-
     # in @4.5.1. TBB support in SPQR seems to be broken as TBB-related linkng
     # flags does not seem to be used, which leads to linking errors on Linux.
     depends_on('tbb', when='@4.5.3:+tbb')
@@ -64,6 +64,8 @@ class SuiteSparse(Package):
             'CXX=c++',
             'F77=f77',
         ])
+        if '+fpic' in spec:
+            make_args.extend(['CFLAGS=-fPIC', 'FFLAGS=-fPIC'])
 
         # use Spack's metis in CHOLMOD/Partition module,
         # otherwise internal Metis will be compiled
@@ -82,8 +84,8 @@ class SuiteSparse(Package):
 
         # Make sure Spack's Blas/Lapack is used. Otherwise System's
         # Blas/Lapack might be picked up.
-        blas = to_link_flags(spec['blas'].blas_shared_lib)
-        lapack = to_link_flags(spec['lapack'].lapack_shared_lib)
+        blas = spec['blas'].blas_libs.ld_flags
+        lapack = spec['lapack'].lapack_libs.ld_flags
         if '@4.5.1' in spec:
             # adding -lstdc++ is clearly an ugly way to do this, but it follows
             # with the TCOV path of SparseSuite 4.5.1's Suitesparse_config.mk

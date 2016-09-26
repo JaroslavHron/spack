@@ -46,13 +46,13 @@ class Octopus(Package):
     # FEAST, Libfm, PFFT, ISF, PNFFT
 
     def install(self, spec, prefix):
+        lapack = spec['lapack'].lapack_libs
+        blas = spec['blas'].blas_libs
         args = []
         args.extend([
             '--prefix=%s' % prefix,
-            '--with-blas=%s' % to_link_flags(
-                spec['blas'].blas_shared_lib),
-            '--with-lapack=%s' % to_link_flags(
-                spec['lapack'].lapack_shared_lib),
+            '--with-blas=%s' % blas.ld_flags,
+            '--with-lapack=%s' % lapack.ld_flags,
             '--with-gsl-prefix=%s' % spec['gsl'].prefix,
             '--with-libxc-prefix=%s' % spec['libxc'].prefix,
             'CC=%s' % spec['mpi'].mpicc,
@@ -70,10 +70,13 @@ class Octopus(Package):
             # --with-berkeleygw-prefix=${prefix}
         ])
 
-        # Supposedly configure does not pick up the required flags for gfortran
-        # Without it there are:
-        #   Error: Line truncated @ global.F90:157:132
-        #   Error: Unterminated character constant @ global.F90:157:20
+        # When preprocessor expands macros (i.e. CFLAGS) defined as quoted
+        # strings the result may be > 132 chars and is terminated.
+        # This will look to a compiler as an Unterminated character constant
+        # and produce Line truncated errors. To vercome this, add flags to
+        # let compiler know that the entire line is meaningful.
+        # TODO: For the lack of better approach, assume that clang is mixed
+        # with GNU fortran.
         if spec.satisfies('%clang') or spec.satisfies('%gcc'):
             args.extend([
                 'FCFLAGS=-O2 -ffree-line-length-none'

@@ -25,54 +25,54 @@ packages:
     buildable: False
     version: [system]
   openmpi:
-    version: [2.0.0]
+    #version: [2.0.0]
     variants: [ +pmi, +slurm, +thread_multiple, ~tm, +verbs ]
   openblas:
-    version: [0.2.19]
+    #version: [0.2.19]
     variants: [ +nothreads, ~openmp ]
   arpack-ng:
-    version: [3.4.0]
+    #version: [3.4.0]
     variants: [ +mpi ]
   boost:
-    version: [1.61.0]
+    #version: [1.61.0]
     variants: [ +atomic, +chrono, +date_time, +filesystem, +graph, +iostreams, +log, +math, +mpi, +multithreaded, +program_options, +python, +random, +regex, +serialization, +signals, +singlethreaded, +system, +thread, +timer, +wave]
   eigen:
-    version: [3.2.7]
+    #version: [3.2.7]
     variants: [ +fftw, +metis, +mpfr, +scotch, +suitesparse]
   hdf5:
-    version: [1.10.0-patch1]
+    #version: [1.10.0-patch1]
     variants: [+cxx, +fortran, +mpi, +szip, ~threadsafe]
   hypre:
-    version: [2.10.1]
+    #version: [2.10.1]
     variants: [ +internal-superlu]
   netcdf:
-    version: [4.4.1]
+    #version: [4.4.1]
     variants: [ +mpi ]
   parmetis:
-    version: [4.0.3]
+    #version: [4.0.3]
   petsc:
-    version: [3.7.2]
+    #version: [3.7.2]
     variants: [ +blacs, +boost, +double, +hdf5, +hypre, +metis, +ml, +mpi, +mumps, +pord, +ptscotch, +scalapack, +scotch, +suitesparse, +superlu, +superlu_dist ]
   py-mpi4py:
-    version: [2.0.0]
+    #version: [2.0.0]
   py-petsc4py:
-    version: [3.7.0]
+    #version: [3.7.0]
   py-slepc4py:
-    version: [3.7.0]
+    #version: [3.7.0]
   scotch:
-    version: [6.0.3]
+    #version: [6.0.3]
     variants: [ +compression, +esmumps, ~metis, +mpi ]
   slepc:
-    version: [3.7.1]
+    #version: [3.7.1]
     variants: [ +arpack ]
   trilinos:
-    version: [12.6.4]
+    #version: [12.6.4]
     variants: [ +boost, +hdf5, +hypre, +metis, ~mumps, ~python, +suite-sparse, ~superlu-dist ]
   vtk:
-    version: [7.0.0]
+    #version: [7.0.0]
     variants: [ +opengl2, +sw ]
   fenics:
-    version: [2016.1.0]
+    #version: [2016.1.0]
     variants: [+doc, +hdf5, +mpi, +mpi4py, +petsc, +petsc4py, +scotch, +slepc, +slepc4py, +suitesparse, +trilinos, +vtk ]
   zlib:
     paths:

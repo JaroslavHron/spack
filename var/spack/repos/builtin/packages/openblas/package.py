@@ -45,6 +45,17 @@ class Openblas(Package):
 
     patch('make.patch')
 
+    @property
+    def blas_libs(self):
+        shared = True if '+shared' in self.spec else False
+        return find_libraries(
+            ['libopenblas'], root=self.prefix, shared=shared, recurse=True
+        )
+
+    @property
+    def lapack_libs(self):
+        return self.blas_libs
+
     def install(self, spec, prefix):
         # As of 06/2016 there is no mechanism to specify that packages which
         # depends on Blas/Lapack need C or/and Fortran symbols. For now
@@ -97,6 +108,9 @@ class Openblas(Package):
         # no quotes around prefix (spack doesn't use a shell)
         make('install', "PREFIX=%s" % prefix, *make_defs)
 
+        # TODO : the links below are mainly there because client
+        # TODO : packages are wrongly written. Check if they can be removed
+
         # Blas virtual package should provide blas.a and libblas.a
         with working_dir(prefix.lib):
             symlink('libopenblas.a', 'blas.a')
@@ -116,21 +130,6 @@ class Openblas(Package):
         # symbols. To make sure we get working Blas and Lapack, do a small
         # test.
         self.check_install(spec)
-
-    def setup_dependent_package(self, module, dspec):
-        # This is WIP for a prototype interface for virtual packages.
-        # We can update this as more builds start depending on BLAS/LAPACK.
-        libdir = find_library_path('libopenblas.a',
-                                   self.prefix.lib64,
-                                   self.prefix.lib)
-
-        self.spec.blas_static_lib   = join_path(libdir, 'libopenblas.a')
-        self.spec.lapack_static_lib = self.spec.blas_static_lib
-
-        if '+shared' in self.spec:
-            self.spec.blas_shared_lib   = join_path(libdir, 'libopenblas.%s' %
-                                                    dso_suffix)
-            self.spec.lapack_shared_lib = self.spec.blas_shared_lib
 
     def check_install(self, spec):
         source_file = join_path(os.path.dirname(self.module.__file__),

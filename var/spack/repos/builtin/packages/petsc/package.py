@@ -27,8 +27,7 @@ from spack import *
 
 
 class Petsc(Package):
-    """
-    PETSc is a suite of data structures and routines for the scalable
+    """PETSc is a suite of data structures and routines for the scalable
     (parallel) solution of scientific applications modeled by partial
     differential equations.
     """
@@ -72,6 +71,8 @@ class Petsc(Package):
     def mpi_dependent_options(self):
         if '~mpi' in self.spec:
             compiler_opts = [
+                '--with-cpp=cpp',
+                '--with-cxxcpp=cpp',
                 '--with-cc=%s' % os.environ['CC'],
                 '--with-cxx=%s' % (os.environ['CXX'] if self.compiler.cxx is not None else '0'),  # NOQA: ignore=E501
                 '--with-fc=%s' % (os.environ['FC'] if self.compiler.fc is not None else '0'),  # NOQA: ignore=E501
@@ -90,6 +91,8 @@ class Petsc(Package):
         else:
             opt_flags='-O2 -mfpmath=sse -fexpensive-optimizations'
             compiler_opts = [
+                '--with-cpp=cpp',
+                '--with-cxxcpp=cpp',
                 '--with-mpi=1',
                 '--with-mpi-dir=%s' % self.spec['mpi'].prefix,
                 '--CFLAGS=-march=native -pipe',

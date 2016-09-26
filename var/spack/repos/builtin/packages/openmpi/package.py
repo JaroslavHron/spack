@@ -61,12 +61,14 @@ def _slurm_dir():
 
 
 class Openmpi(Package):
-    """Open MPI is a project combining technologies and resources from
-       several other projects (FT-MPI, LA-MPI, LAM/MPI, and PACX-MPI)
-       in order to build the best MPI library available. A completely
-       new MPI-2 compliant implementation, Open MPI offers advantages
-       for system and software vendors, application developers and
-       computer science researchers.
+    """The Open MPI Project is an open source Message Passing Interface
+       implementation that is developed and maintained by a consortium
+       of academic, research, and industry partners. Open MPI is
+       therefore able to combine the expertise, technologies, and
+       resources from all across the High Performance Computing
+       community in order to build the best MPI library available.
+       Open MPI offers advantages for system and software vendors,
+       application developers and computer science researchers.
     """
 
     homepage = "http://www.open-mpi.org"
@@ -74,10 +76,17 @@ class Openmpi(Package):
     list_url = "http://www.open-mpi.org/software/ompi/"
     list_depth = 3
 
-    version('1.10.3', 'e2fe4513200e2aaa1500b762342c674b')
+    version('2.0.1', '6f78155bd7203039d2448390f3b51c96')
     version('2.0.0', 'cdacc800cb4ce690c1f1273cb6366674')
+    version('1.10.3', 'e2fe4513200e2aaa1500b762342c674b')
+    version('1.10.2', 'b2f43d9635d2d52826e5ef9feb97fd4c')
+    version('1.10.1', 'f0fcd77ed345b7eafb431968124ba16e')
+    version('1.10.0', '280cf952de68369cebaca886c5ce0304')
     version('1.8.8', '0dab8e602372da1425e9242ae37faf8c')
+    version('1.6.5', '03aed2a4aa4d0b27196962a2a65fc475')
 
+    patch('ad_lustre_rwcontig_open_source.patch', when="@1.6.5")
+    patch('llnl-platforms.patch', when="@1.6.5")
     patch('configure.patch', when="@1.10.0:1.10.1")
 
     variant('psm', default=False, description='Build support for the PSM library.')
@@ -105,6 +114,7 @@ class Openmpi(Package):
 
     # TODO : support for CUDA is missing
 
+    provides('mpi@:2.2', when='@1.6.5')
     provides('mpi@:3.0', when='@1.7.5:')
     provides('mpi@:3.1', when='@2.0.0:')
 
@@ -134,6 +144,10 @@ class Openmpi(Package):
         self.spec.mpifc = join_path(self.prefix.bin, 'mpifort')
         self.spec.mpif77 = join_path(self.prefix.bin, 'mpif77')
         self.spec.mpif90 = join_path(self.prefix.bin, 'mpif90')
+        self.spec.mpicxx_shared_libs = [
+            join_path(self.prefix.lib, 'libmpi_cxx.{0}'.format(dso_suffix)),
+            join_path(self.prefix.lib, 'libmpi.{0}'.format(dso_suffix))
+        ]
 
     def setup_environment(self, spack_env, run_env):
         # As of 06/2016 there is no mechanism to specify that packages which
@@ -168,6 +182,10 @@ class Openmpi(Package):
                        "--with-hwloc=%s" % spec['hwloc'].prefix,
                        "--enable-shared",
                        "--enable-static"]
+
+        # for Open-MPI 2.0:, C++ bindings are disabled by default.
+        if self.spec.satisfies('@2.0:'):
+            config_args.extend(['--enable-mpi-cxx'])
 
         if getattr(self, 'config_extra', None) is not None:
             config_args.extend(self.config_extra)

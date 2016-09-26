@@ -23,7 +23,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
 from spack import *
-import spack
 import sys
 import os
 
@@ -91,28 +90,33 @@ class Boost(Package):
                                 'test',
                                 'thread',
                                 'timer',
-                                'wave','mpi'])
+                                'wave'])
 
     # mpi/python are not installed by default because they pull in many
     # dependencies and/or because there is a great deal of customization
     # possible (and it would be difficult to choose sensible defaults)
-    default_noinstall_libs = set(['python'])
+    default_noinstall_libs = set(['mpi', 'python'])
 
     all_libs = default_install_libs | default_noinstall_libs
 
     for lib in all_libs:
         variant(lib, default=(lib not in default_noinstall_libs),
-            description="Compile with {0} library".format(lib))
+                description="Compile with {0} library".format(lib))
 
-    #variant('mpi', default=True, description='Compile with mpi library')
-    variant('debug', default=False, description='Switch to the debug version of Boost')
-    variant('shared', default=True, description="Additionally build shared libraries")
-    variant('multithreaded', default=True, description="Build multi-threaded versions of libraries")
-    variant('singlethreaded', default=True, description="Build single-threaded versions of libraries")
-    variant('icu_support', default=False, description="Include ICU support (for regex/locale libraries)")
-    variant('graph', default=False, description="Build the Boost Graph library")
+    variant('debug', default=False,
+            description='Switch to the debug version of Boost')
+    variant('shared', default=True,
+            description="Additionally build shared libraries")
+    variant('multithreaded', default=True,
+            description="Build multi-threaded versions of libraries")
+    variant('singlethreaded', default=True,
+            description="Build single-threaded versions of libraries")
+    variant('icu', default=False,
+            description="Build with Unicode and ICU suport")
+    variant('graph', default=False,
+            description="Build the Boost Graph library")
 
-    depends_on('icu', when='+icu_support')
+    depends_on('icu4c', when='+icu')
     depends_on('python', when='+python')
     depends_on('mpi', when='+mpi')
     depends_on('bzip2', when='+iostreams')
@@ -129,8 +133,7 @@ class Boost(Package):
         parts = [str(p) for p in Version(version)]
         dots = ".".join(parts)
         underscores = "_".join(parts)
-        return "http://downloads.sourceforge.net/project/boost" \
-               "/boost/%s/boost_%s.tar.bz2" % (dots, underscores)
+        return "http://downloads.sourceforge.net/project/boost/boost/%s/boost_%s.tar.bz2" % (dots, underscores)
 
     def determine_toolset(self, spec):
         if spec.satisfies("platform=darwin"):
@@ -140,6 +143,8 @@ class Boost(Package):
                     'icpc': 'intel',
                     'clang++': 'clang'}
 
+        if spec.satisfies('@1.47:'):
+            toolsets['icpc'] += '-linux'
         for cc, toolset in toolsets.iteritems():
             if cc in self.compiler.cxx_names:
                 return toolset
@@ -157,16 +162,23 @@ class Boost(Package):
                            join_path(spec['python'].prefix.bin, 'python'))
 
         with open('user-config.jam', 'w') as f:
-            compiler_wrapper = join_path(spack.build_env_path, 'c++')
-            f.write("using {0} : : {1} ;\n".format(boostToolsetId,
-                    compiler_wrapper))
+            # Boost may end up using gcc even though clang+gfortran is set in
+            # compilers.yaml. Make sure this does not happen:
+            if not spec.satisfies('%intel'):
+                # using intel-linux : : spack_cxx in user-config.jam leads to
+                # error: at project-config.jam:12
+                # error: duplicate initialization of intel-linux with the following parameters:  # noqa
+                # error: version = <unspecified>
+                # error: previous initialization at ./user-config.jam:1
+                f.write("using {0} : : {1} ;\n".format(boostToolsetId,
+                                                       spack_cxx))
 
             if '+mpi' in spec:
                 f.write('using mpi : %s ;\n' %
                         join_path(spec['mpi'].prefix.bin, 'mpicxx'))
             if '+python' in spec:
                 f.write('using python : %s : %s ;\n' %
-                        (spec['python'].version,
+                        (spec['python'].version.up_to(2),
                          join_path(spec['python'].prefix.bin, 'python')))
 
     def determine_b2_options(self, spec, options):
@@ -199,9 +211,14 @@ class Boost(Package):
                                multithreaded} must be enabled""")
 
         options.extend([
-            'toolset=%s' % self.determine_toolset(spec),
             'link=%s' % ','.join(linkTypes),
-            '--layout=tagged'])
+            '--layout=tagged'
+        ])
+
+        if not spec.satisfies('%intel'):
+            options.extend([
+                'toolset=%s' % self.determine_toolset(spec)
+            ])
 
         return threadingOpts
 
