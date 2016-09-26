@@ -26,7 +26,7 @@ packages:
     version: [system]
   openmpi:
     #version: [2.0.0]
-    variants: [ +pmi, +slurm, +thread_multiple, ~tm, +verbs ]
+    variants: [ +pmi, +slurm, ~thread_multiple, ~tm, +verbs, ~vt ]
   openblas:
     #version: [0.2.19]
     variants: [ +nothreads, ~openmp ]

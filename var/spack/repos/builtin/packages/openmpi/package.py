@@ -108,6 +108,7 @@ class Openmpi(Package):
             description='Build SLURM scheduler component')
 
     variant('sqlite3', default=False, description='Build sqlite3 support')
+    variant('cxx', default=False, description='Build C++ bindings')
 
     variant('vt', default=True,
             description='Build support for contributed package vt')
@@ -184,7 +185,7 @@ class Openmpi(Package):
                        "--enable-static"]
 
         # for Open-MPI 2.0:, C++ bindings are disabled by default.
-        if self.spec.satisfies('@2.0:'):
+        if '+cxx' in spec and self.spec.satisfies('@2.0:'):
             config_args.extend(['--enable-mpi-cxx'])
 
         if getattr(self, 'config_extra', None) is not None:
