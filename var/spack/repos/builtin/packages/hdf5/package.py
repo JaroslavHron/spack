@@ -46,10 +46,8 @@ class Hdf5(Package):
     version('1.8.13', 'c03426e9e77d7766944654280b467289')
     version('1.8.12', 'd804802feb99b87fc668a90e6fa34411')
 
-    variant('debug', default=False,
-            description='Builds a debug version of the library')
-    variant('shared', default=True,
-            description='Builds a shared version of the library')
+    variant('debug', default=False, description='Builds a debug version of the library')
+    variant('shared', default=True, description='Builds a shared version of the library')
 
     variant('cxx', default=True, description='Enable C++ support')
     variant('fortran', default=True, description='Enable Fortran support')

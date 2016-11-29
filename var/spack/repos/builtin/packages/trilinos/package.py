@@ -61,24 +61,23 @@ class Trilinos(Package):
         return '%s/trilinos-release-%s.tar.gz' % \
             (Trilinos.base_url, version.dashed)
 
-    variant('metis',        default=True,
-            description='Compile with METIS and ParMETIS')
-    variant('mumps',        default=True,
-            description='Compile with support for MUMPS solvers')
-    variant('superlu-dist', default=True,
-            description='Compile with SuperluDist solvers')
-    variant('hypre',        default=True,
-            description='Compile with Hypre preconditioner')
+    def url_for_version(self, version):
+        base_url = "https://github.com/trilinos/Trilinos/archive"
+        parts = [str(p) for p in Version(version)]
+        dash_ver = "-".join(parts)
+        return "{0}/trilinos-release-{1}.tar.gz".format(base_url, dash_ver)
+                            
+    variant('metis',        default=True,  description='Compile with METIS and ParMETIS')
+    variant('mumps',        default=False,  description='Compile with support for MUMPS solvers')
+    variant('superlu-dist', default=False,  description='Compile with SuperluDist solvers')
+    variant('hypre',        default=True,  description='Compile with Hypre preconditioner')
     variant('hdf5',         default=True,  description='Compile with HDF5')
-    variant('suite-sparse', default=True,
-            description='Compile with SuiteSparse solvers')
+    variant('suite-sparse', default=True,  description='Compile with SuiteSparse solvers')
     # not everyone has py-numpy activated, keep it disabled by default to avoid
     # configure errors
     variant('python',       default=False, description='Build python wrappers')
-    variant('shared',       default=True,
-            description='Enables the build of shared libraries')
-    variant('debug',        default=False,
-            description='Builds a debug version of the libraries')
+    variant('shared',       default=True,  description='Enables the build of shared libraries')
+    variant('debug',        default=False, description='Builds a debug version of the libraries')
     variant('boost',        default=True, description='Compile with Boost')
 
     depends_on('cmake', type='build')
@@ -107,7 +106,7 @@ class Trilinos(Package):
     depends_on('scalapack', when='+mumps')
     depends_on('superlu-dist@:4.3', when='@:12.6.1+superlu-dist')
     depends_on('superlu-dist', when='@12.6.2:+superlu-dist')
-    depends_on('hypre~internal-superlu', when='+hypre')
+    depends_on('hypre', when='+hypre')
     depends_on('hdf5+mpi', when='+hdf5')
     depends_on('python', when='+python')
     depends_on('py-numpy', when='+python')

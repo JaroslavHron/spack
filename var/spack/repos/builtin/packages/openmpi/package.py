@@ -85,8 +85,6 @@ class Openmpi(Package):
     version('1.8.8', '0dab8e602372da1425e9242ae37faf8c')
     version('1.6.5', '03aed2a4aa4d0b27196962a2a65fc475')
 
-    patch('ad_lustre_rwcontig_open_source.patch', when="@1.6.5")
-    patch('llnl-platforms.patch', when="@1.6.5")
     patch('configure.patch', when="@1.10.0:1.10.1")
 
     variant('psm', default=False, description='Build support for the PSM library.')
