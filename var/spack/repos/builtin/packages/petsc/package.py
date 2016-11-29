@@ -54,6 +54,8 @@ class Petsc(Package):
     variant('complex', default=False, description='Build with complex numbers')
     variant('debug',   default=False, description='Compile in debug mode')
 
+    variant('download',   default=True, description='Use external libs patched by petsc')
+
     variant('metis',   default=True,
             description='Activates support for metis and parmetis')
     variant('hdf5',    default=True,
@@ -66,6 +68,11 @@ class Petsc(Package):
     variant('superlu-dist', default=True,
             description='Activates support for SuperluDist (only parallel)')
 
+    download_libs=( 'superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch', 'metis', 'parmetis')
+
+    for lib in download_libs:
+        variant(lib, default=True, description="Compile with internal {0} library".format(lib))
+
     # Virtual dependencies
     depends_on('blas')
     depends_on('lapack')
@@ -76,19 +83,19 @@ class Petsc(Package):
 
     # Other dependencies
     depends_on('boost', when='@:3.5+boost')
-    depends_on('metis@5:', when='+metis')
+    depends_on('metis@5:', when='+metis~download')
 
-    depends_on('hdf5+mpi', when='+hdf5+mpi')
-    depends_on('parmetis', when='+metis+mpi')
+    depends_on('hdf5+mpi', when='+hdf5+mpi~download')
+    depends_on('parmetis', when='+metis+mpi~download')
     # Hypre does not support complex numbers.
     # Also PETSc prefer to build it without internal superlu, likely due to
     # conflict in headers see
     # https://bitbucket.org/petsc/petsc/src/90564b43f6b05485163c147b464b5d6d28cde3ef/config/BuildSystem/config/packages/hypre.py
-    depends_on('hypre~internal-superlu', when='+hypre+mpi~complex')
-    depends_on('superlu-dist@:4.3', when='@:3.6.4+superlu-dist+mpi')
-    depends_on('superlu-dist@5.0.0:', when='@3.7:+superlu-dist+mpi')
-    depends_on('mumps+mpi', when='+mumps+mpi')
-    depends_on('scalapack', when='+mumps+mpi')
+    depends_on('hypre~internal-superlu', when='+hypre+mpi~complex~download')
+    depends_on('superlu-dist@:4.3', when='@:3.6.4+superlu-dist+mpi~download')
+    depends_on('superlu-dist@5.0.0:', when='@3.7:+superlu-dist+mpi~download')
+    depends_on('mumps+mpi', when='+mumps+mpi~download')
+    depends_on('scalapack', when='+mumps+mpi~download')
 
     def mpi_dependent_options(self):
         if '~mpi' in self.spec:
@@ -144,34 +151,41 @@ class Petsc(Package):
             '--with-blas-lapack-lib=%s' % lapack_blas.joined()
         ])
 
-        # Activates library support if needed
-        for library in ('metis', 'boost', 'hdf5', 'hypre', 'parmetis',
-                        'mumps', 'scalapack'):
-            options.append(
-                '--with-{library}={value}'.format(
-                    library=library, value=('1' if library in spec else '0'))
-            )
-            if library in spec:
-                options.append(
-                    '--with-{library}-dir={path}'.format(
-                        library=library, path=spec[library].prefix)
-                )
-        # PETSc does not pick up SuperluDist from the dir as they look for
-        # superlu_dist_4.1.a
-        if 'superlu-dist' in spec:
-            options.extend([
-                '--with-superlu_dist-include=%s' %
-                spec['superlu-dist'].prefix.include,
-                '--with-superlu_dist-lib=%s' %
-                join_path(spec['superlu-dist'].prefix.lib,
-                          'libsuperlu_dist.a'),
-                '--with-superlu_dist=1'
-            ])
-        else:
-            options.append(
-                '--with-superlu_dist=0'
-            )
+        if '+download' in spec :
+            for library in self.download_libs:
+                if spec.satisfies('+'+library):
+                        options.append('--with-{library}=1'.format(library=library))
+                        options.append('--download-{library}=yes'.format(library=library))
 
+        else :
+
+            # Activates library support if needed
+            for library in ('metis', 'boost', 'hdf5', 'hypre', 'parmetis', 'mumps', 'scalapack'):
+                options.append(
+                    '--with-{library}={value}'.format(
+                        library=library, value=('1' if library in spec else '0'))
+                    )
+                if library in spec:
+                    options.append(
+                        '--with-{library}-dir={path}'.format(
+                            library=library, path=spec[library].prefix)
+                        )
+                    # PETSc does not pick up SuperluDist from the dir as they look for
+                    # superlu_dist_4.1.a
+                    if 'superlu-dist' in spec:
+                        options.extend([
+                                '--with-superlu_dist-include=%s' %
+                                spec['superlu-dist'].prefix.include,
+                                '--with-superlu_dist-lib=%s' %
+                                join_path(spec['superlu-dist'].prefix.lib,
+                                          'libsuperlu_dist.a'),
+                                '--with-superlu_dist=1'
+                                ])
+                    else:
+                        options.append(
+                            '--with-superlu_dist=0'
+                            )
+                                            
         configure('--prefix=%s' % prefix, *options)
 
         # PETSc has its own way of doing parallel make.

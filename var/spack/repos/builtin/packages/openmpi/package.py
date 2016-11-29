@@ -39,9 +39,20 @@ def _verbs_dir():
         # Get path to executable
         path = ibv_devices.exe[0]
         # Remove executable name and "bin" directory
-        path = os.path.dirname(path)
-        path = os.path.dirname(path)
-        return path
+        return ancestor(path, n=2)
+    except:
+        return None
+
+def _slurm_dir():
+    try:
+        # Try to locate Verbs by looking for a utility in the path
+        sinfo = which("sinfo")
+        # Run it (silently) to ensure it works
+        sinfo(output=str, error=str)
+        # Get path to executable
+        path = sinfo.exe[0]
+        # Remove executable name and "bin" directory
+        return ancestor(path, n=2)
     except:
         return None
 
@@ -94,15 +105,18 @@ class Openmpi(Package):
             description='Build SLURM scheduler component')
 
     variant('sqlite3', default=False, description='Build sqlite3 support')
+    variant('cxx', default=False, description='Build C++ bindings')
 
     variant('vt', default=True,
             description='Build support for contributed package vt')
 
     # TODO : support for CUDA is missing
 
-    provides('mpi@:2.2', when='@1.6.5')
-    provides('mpi@:3.0', when='@1.7.5:')
-    provides('mpi@:3.1', when='@2.0.0:')
+    #provides('mpi@:2.2', when='@1.6.5')
+    #provides('mpi@:3.0', when='@1.7.5:')
+    #provides('mpi@:3.1', when='@2.0.0:')
+    
+    provides('mpi')
 
     depends_on('hwloc')
     depends_on('sqlite', when='+sqlite3')
@@ -115,18 +129,21 @@ class Openmpi(Package):
         spack_env.set('MPICC',  join_path(self.prefix.bin, 'mpicc'))
         spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpic++'))
         spack_env.set('MPIF77', join_path(self.prefix.bin, 'mpif77'))
+        spack_env.set('MPIFC', join_path(self.prefix.bin, 'mpifort'))
         spack_env.set('MPIF90', join_path(self.prefix.bin, 'mpif90'))
 
         spack_env.set('OMPI_CC', spack_cc)
         spack_env.set('OMPI_CXX', spack_cxx)
         spack_env.set('OMPI_FC', spack_fc)
         spack_env.set('OMPI_F77', spack_f77)
+        spack_env.set('OMPI_F90', spack_fc)
 
     def setup_dependent_package(self, module, dep_spec):
         self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
         self.spec.mpicxx = join_path(self.prefix.bin, 'mpic++')
-        self.spec.mpifc = join_path(self.prefix.bin, 'mpif90')
+        self.spec.mpifc = join_path(self.prefix.bin, 'mpifort')
         self.spec.mpif77 = join_path(self.prefix.bin, 'mpif77')
+        self.spec.mpif90 = join_path(self.prefix.bin, 'mpif90')
         self.spec.mpicxx_shared_libs = [
             join_path(self.prefix.lib, 'libmpi_cxx.{0}'.format(dso_suffix)),
             join_path(self.prefix.lib, 'libmpi.{0}'.format(dso_suffix))

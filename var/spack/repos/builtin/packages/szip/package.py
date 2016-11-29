@@ -34,8 +34,7 @@ class Szip(AutotoolsPackage):
     """
 
     homepage = "https://www.hdfgroup.org/doc_resource/SZIP/"
-    url = "http://www.hdfgroup.org/ftp/lib-external/szip/2.1/src/szip-2.1.tar.gz"
-
+    url = "https://support.hdfgroup.org/ftp/lib-external/szip/2.1/src/szip-2.1.tar.gz"
     version('2.1', '902f831bcefb69c6b635374424acbead')
 
     def configure_args(self):
