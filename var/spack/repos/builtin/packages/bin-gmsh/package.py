@@ -25,7 +25,7 @@
 from spack import *
 
 
-class Gmsh(Package):
+class BinGmsh(Package):
     """Gmsh is a free 3D finite element grid generator with a built-in CAD engine
     and post-processor. Its design goal is to provide a fast, light and
     user-friendly meshing tool with parametric input and advanced visualization

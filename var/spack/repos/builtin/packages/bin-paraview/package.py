@@ -24,7 +24,7 @@
 ##############################################################################
 from spack import *
 
-class Paraview(Package):
+class BinParaview(Package):
     homepage = 'http://www.paraview.org'
     url      = 'http://www.paraview.org'
     
