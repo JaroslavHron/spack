@@ -116,6 +116,9 @@ concretizer = DefaultConcretizer()
 # config.yaml options
 #-----------------------------------------------------------------------------
 _config = spack.config.get_config('config')
+# Version information
+from spack.version import Version
+spack_version = Version("0.9.1")
 
 
 # Path where downloaded source code is cached
