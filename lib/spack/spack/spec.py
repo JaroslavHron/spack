@@ -1064,9 +1064,6 @@ class Spec(object):
 
         # Don't read dependencies here; from_node_dict() is used by
         # from_yaml() to read the root *and* each dependency spec.
-        if 'variants' in node:
-            for name, enabled in node['variants'].items():
-                spec.variants[name] = VariantSpec(name, enabled)
 
         return spec
 
