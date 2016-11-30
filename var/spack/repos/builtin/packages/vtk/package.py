@@ -37,15 +37,18 @@ class Vtk(Package):
     version('7.0.0', '5fe35312db5fb2341139b8e4955c367d')
     version('6.3.0', '0231ca4840408e9dd60af48b314c5b6d')
     version('6.1.0', '25e4dfb3bad778722dcaec80cd5dab7d')
+    version('5.10.1', '264b0052e65bd6571a84727113508789', url="http://www.vtk.org/files/release/5.10/vtk-5.10.1.tar.gz")
 
     # VTK7 defaults to OpenGL2 rendering backend
-    variant('opengl2', default=True, description='Build with OpenGL2 instead of OpenGL as rendering backend')
-    variant('python', default=False, description='Build the python modules')
+    variant('opengl2', default=False, description='Build with OpenGL2 instead of OpenGL as rendering backend')
+    variant('python', default=True, description='Build the python modules')
+    variant('sw', default=True, description='Build only software renderer')
 
     patch('gcc.patch')
 
     depends_on('cmake', type='build')
     depends_on('qt')
+    depends_on("mesa+llvm+gallium", when='+sw')
 
     extends('python', when='+python')
     depends_on('python', when='+python')
@@ -78,6 +81,18 @@ class Vtk(Package):
                 '-DVTK_QT_VERSION:STRING={0}'.format(qt_ver),
                 '-DQT_QMAKE_EXECUTABLE:PATH={0}/qmake'.format(qt_bin),
                 '-DVTK_Group_Qt:BOOL=ON',
+                '-DVTK_PYTHON_SETUP_ARGS:STRING=--prefix=. --root={0} --single-version-externally-managed'.format(spec['python'].prefix),
+                '-DPYTHON_EXECUTABLE:FILEPATH={0}/python'.format(spec['python'].prefix.bin),
+                '-DVTK_USE_OGGTHEORA_ENCODER=ON',
+                '-DVTK_USE_GL2PS=ON', 
+                '-DVTK_OPENGL_HAS_OSMESA=ON',
+                #Set the following values to apropriate locations:
+                '-DOSMESA_INCLUDE_DIR={0}'.format(spec['mesa'].prefix.include),
+                '-DOSMESA_LIBRARY=-L{0} -lOSMesa',
+                # Disable wrappers for other languages.
+                "-DVTK_WRAP_PYTHON=OFF",
+                "-DVTK_WRAP_JAVA=OFF",
+                "-DVTK_WRAP_TCL=OFF"
             ])
 
             # NOTE: The following definitions are required in order to allow
@@ -97,3 +112,6 @@ class Vtk(Package):
             cmake('..', *cmake_args)
             make()
             make('install')
+
+    def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
+        spack_env.set('VTK_DIR', self.prefix)
