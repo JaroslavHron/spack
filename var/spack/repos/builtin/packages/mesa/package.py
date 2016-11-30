@@ -30,9 +30,9 @@ class Mesa(Package):
     specification - a system for rendering interactive 3D graphics."""
 
     homepage = "http://www.mesa3d.org"
-    url      = "ftp://ftp.freedesktop.org/pub/mesa/12.0.3/mesa-12.0.3.tar.gz"
+    url      = "ftp://ftp.freedesktop.org/pub/mesa"
 
-    version('12.0.3', '60c5f9897ddc38b46f8144c7366e84ad')
+    version('12.0.3', git='https://anongit.freedesktop.org/git/mesa/mesa.git', tag='mesa-12.0.3')
 
     # General dependencies
     depends_on('python@2.6.4:')
@@ -40,28 +40,61 @@ class Mesa(Package):
     depends_on('flex@2.5.35:', type='build')
     depends_on('bison@2.4.1:', type='build')
 
-    # For DRI and hardware acceleration
-    depends_on('libpthread-stubs')
-    depends_on('libdrm')
-    depends_on('openssl')
-    depends_on('libxcb@1.9.3:')
-    depends_on('libxshmfence@1.1:')
-    depends_on('libx11')
-    depends_on('libxext')
-    depends_on('libxdamage')
-    depends_on('libxfixes')
+    depends_on("llvm", when='+llvm')
+    depends_on("libxml2+python")
 
-    depends_on('glproto@1.4.14:', type='build')
-    depends_on('dri2proto@2.6:', type='build')
-    depends_on('dri3proto@1.0:', type='build')
-    depends_on('presentproto@1.0:', type='build')
     depends_on('pkg-config@0.9.0:', type='build')
 
-    # TODO: Add package for systemd, provides libudev
-    # Using the system package manager to install systemd didn't work for me
-
+    variant('llvm', default=True, description='Use llvm accelerated software renderer')
+    variant('swrast', default=False, description='Build only software renderer')
+    variant('gallium', default=False, description='Build only gallium software renderer')
+    variant('oswr', default=False, description='Use OpenSWR software rasterizer')
+    
     def install(self, spec, prefix):
-        configure('--prefix={0}'.format(prefix))
+
+        autoreconf = which("autoreconf")
+        autoreconf("--install", "--verbose", "--force")
+
+        config_args = ["PYTHON2=%s/python"%spec['python'].prefix.bin, \
+                       "CXXFLAGS=-DDEFAULT_SOFTWARE_DEPTH_BITS=31", \
+                       "CFLAGS=-DDEFAULT_SOFTWARE_DEPTH_BITS=31", \
+                       "--prefix=%s" % prefix,\
+                       "--disable-xvmc", \
+                       "--enable-gl", \
+                       "--enable-gles1", \
+                       "--enable-gles2", \
+                       "--enable-texture-float", \
+                       "--enable-glx-tls", \
+                       #"--disable-shared-glapi", \
+                       "--disable-dri", \
+                       "--disable-driglx-direct", \
+                       "--disable-egl", \
+                       "--with-egl-platforms="]
+
+        config_args.extend(["--enable-gallium-llvm={0}".format("yes" if '+llvm' in spec else "no")])
+
+        if '+swrast' in spec:
+            config_args.extend([
+                "--with-gallium-drivers=swrast", \
+                "--enable-osmesa", \
+                "--enable-glx=xlib", \
+                "--with-dri-drivers=swrast"])
+            
+
+        if '+gallium' in spec:
+            config_args.extend([
+                "--with-gallium-drivers=swrast", \
+                "--enable-gallium-osmesa", \
+                "--enable-glx=gallium-xlib", \
+                "--with-dri-drivers=swrast"])
+
+        if '+oswr' in spec:
+            config_args.extend([
+                "--with-gallium-drivers=swr", \
+                "--enable-osmesa", \
+                "--enable-glx=xlib"])
+
+        configure(*config_args)
 
         make()
-        make('install')
+        make("install")
