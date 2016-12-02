@@ -22,22 +22,21 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
+
 from spack import *
 
 
-class PyScientificpython(Package):
-    """ScientificPython is a collection of Python modules for
-       scientific computing. It contains support for geometry,
-       mathematical functions, statistics, physical units, IO,
-       visualization, and parallelization."""
+class Sowing(Package):
+    """Sowing generates Fortran interfaces and documentation for PETSc
+       and MPICH.
+    """
 
-    homepage = "https://sourcesup.renater.fr/projects/scientific-py/"
-    url      = "https://sourcesup.renater.fr/frs/download.php/file/4411/ScientificPython-2.8.1.tar.gz"
-    version('2.8.1', '73ee0df19c7b58cdf2954261f0763c77')
+    homepage = "http://www.mcs.anl.gov/petsc/index.html"
+    url = "http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.23-p1.tar.gz"
 
-    depends_on('py-numpy')
-
-    extends('python')
+    version('1.1.23-p1', '65aaf3ae2a4c0f30d532fec291702e16')
 
     def install(self, spec, prefix):
-        setup_py('install', '--prefix=%s' % prefix)
+        configure('--prefix=%s' % prefix)
+        make('ALL', parallel=False)
+        make("install")

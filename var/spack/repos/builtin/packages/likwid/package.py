@@ -25,19 +25,37 @@
 from spack import *
 
 
-class PyScientificpython(Package):
-    """ScientificPython is a collection of Python modules for
-       scientific computing. It contains support for geometry,
-       mathematical functions, statistics, physical units, IO,
-       visualization, and parallelization."""
+class Likwid(Package):
+    """Likwid is a simple to install and use toolsuite of command line
+    applications for performance oriented programmers. It works for Intel and
+    AMD processors on the Linux operating system."""
 
-    homepage = "https://sourcesup.renater.fr/projects/scientific-py/"
-    url      = "https://sourcesup.renater.fr/frs/download.php/file/4411/ScientificPython-2.8.1.tar.gz"
-    version('2.8.1', '73ee0df19c7b58cdf2954261f0763c77')
+    homepage = "https://github.com/RRZE-HPC/likwid"
+    url      = "https://github.com/RRZE-HPC/likwid/archive/4.1.2.tar.gz"
 
-    depends_on('py-numpy')
+    version('4.1.2', 'a857ce5bd23e31d96e2963fe81cb38f0')
 
-    extends('python')
+    # TODO: how to specify those?
+    # depends_on('hwloc')
+    # depends_on('lua')
+
+    # TODO: check
+    # depends_on('gnuplot', type='run')
+
+    supported_compilers = {'clang': 'CLANG', 'gcc': 'GCC', 'intel': 'ICC'}
 
     def install(self, spec, prefix):
-        setup_py('install', '--prefix=%s' % prefix)
+        if self.compiler.name not in self.supported_compilers:
+            raise RuntimeError('{0} is not a supported compiler \
+            to compile Likwid'.format(self.compiler.name))
+
+        filter_file('^COMPILER .*',
+                    'COMPILER = ' +
+                    self.supported_compilers[self.compiler.name],
+                    'config.mk')
+        filter_file('^PREFIX .*',
+                    'PREFIX = ' +
+                    prefix,
+                    'config.mk')
+        make()
+        make('install')

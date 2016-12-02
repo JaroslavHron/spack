@@ -22,22 +22,34 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
+
 from spack import *
 
 
-class PyScientificpython(Package):
-    """ScientificPython is a collection of Python modules for
-       scientific computing. It contains support for geometry,
-       mathematical functions, statistics, physical units, IO,
-       visualization, and parallelization."""
+class RRbokeh(Package):
+    """R interface for creating plots in Bokeh. Bokeh by Continuum
+    Analytics."""
 
-    homepage = "https://sourcesup.renater.fr/projects/scientific-py/"
-    url      = "https://sourcesup.renater.fr/frs/download.php/file/4411/ScientificPython-2.8.1.tar.gz"
-    version('2.8.1', '73ee0df19c7b58cdf2954261f0763c77')
+    homepage = "https://hafen.github.io/rbokeh"
+    url      = "https://cran.r-project.org/src/contrib/rbokeh_0.5.0.tar.gz"
+    list_url = "https://cran.r-project.org/src/contrib/Archive/rbokeh"
 
-    depends_on('py-numpy')
+    version('0.5.0', '4e14778c3fbd9286460ca28c68f57d10')
 
-    extends('python')
+    extends('R')
+
+    depends_on('r-htmlwidgets', type=nolink)
+    depends_on('r-maps', type=nolink)
+    depends_on('r-jsonlite', type=nolink)
+    depends_on('r-digest', type=nolink)
+    depends_on('r-hexbin', type=nolink)
+    depends_on('r-lazyeval', type=nolink)
+    depends_on('r-pryr', type=nolink)
+    depends_on('r-magrittr', type=nolink)
+    depends_on('r-ggplot2', type=nolink)
+    depends_on('r-scales', type=nolink)
+    depends_on('r-gistr', type=nolink)
 
     def install(self, spec, prefix):
-        setup_py('install', '--prefix=%s' % prefix)
+        R('CMD', 'INSTALL', '--library={0}'.format(self.module.r_lib_dir),
+          self.stage.source_path)

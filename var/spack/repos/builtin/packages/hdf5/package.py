@@ -40,6 +40,7 @@ class Hdf5(AutotoolsPackage):
 
     version('1.10.0-patch1', '9180ff0ef8dc2ef3f61bd37a7404f295')
     version('1.10.0', 'bdc935337ee8282579cd6bc4270ad199')
+    version('1.8.18', 'dd2148b740713ca0295442ec683d7b1c',
     version('1.8.17', '7d572f8f3b798a628b8245af0391a0ca')
     version('1.8.16', 'b8ed9a36ae142317f88b0c7ef4b9c618')
     version('1.8.15', '03cccb5b33dbe975fdcd8ae9dc021f24')
@@ -201,6 +202,11 @@ HDF5 version {version} {version}
 
     def url_for_version(self, version):
         base_url = "https://support.hdfgroup.org/ftp/HDF5/releases"
+
+            # If we have a specific URL for this version, return it.
+        version_urls = self.version_urls()
+        if version in version_urls:
+            return version_urls[version]
 
         if version == Version("1.2.2"):
             return "{0}/hdf5-{1}.tar.gz".format(base_url, version)

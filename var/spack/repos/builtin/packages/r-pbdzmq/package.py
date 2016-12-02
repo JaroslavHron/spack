@@ -22,22 +22,30 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
+
 from spack import *
 
 
-class PyScientificpython(Package):
-    """ScientificPython is a collection of Python modules for
-       scientific computing. It contains support for geometry,
-       mathematical functions, statistics, physical units, IO,
-       visualization, and parallelization."""
+class RPbdzmq(Package):
+    """'ZeroMQ' is a well-known library for high-performance asynchronous
+    messaging in scalable, distributed applications. This package provides
+    high level R wrapper functions to easily utilize 'ZeroMQ'. We mainly focus
+    on interactive client/server programming frameworks. For convenience, a
+    minimal 'ZeroMQ' library (4.1.0 rc1) is shipped with 'pbdZMQ', which can
+    be used if no system installation of 'ZeroMQ' is available. A few wrapper
+    functions compatible with 'rzmq' are also provided."""
 
-    homepage = "https://sourcesup.renater.fr/projects/scientific-py/"
-    url      = "https://sourcesup.renater.fr/frs/download.php/file/4411/ScientificPython-2.8.1.tar.gz"
-    version('2.8.1', '73ee0df19c7b58cdf2954261f0763c77')
+    homepage = "http://r-pbd.org/"
+    url      = "https://cran.r-project.org/src/contrib/pbdZMQ_0.2-4.tar.gz"
+    list_url = "https://cran.r-project.org/src/contrib/Archive/pbdZMQ"
 
-    depends_on('py-numpy')
+    version('0.2-4', 'e5afb70199aa54d737ee7a0e26bde060')
 
-    extends('python')
+    extends('R')
+
+    depends_on('r-R6', type=nolink)
+    depends_on('zeromq')
 
     def install(self, spec, prefix):
-        setup_py('install', '--prefix=%s' % prefix)
+        R('CMD', 'INSTALL', '--library={0}'.format(self.module.r_lib_dir),
+          self.stage.source_path)

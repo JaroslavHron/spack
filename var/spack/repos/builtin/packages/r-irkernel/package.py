@@ -22,22 +22,30 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 ##############################################################################
+
 from spack import *
 
 
-class PyScientificpython(Package):
-    """ScientificPython is a collection of Python modules for
-       scientific computing. It contains support for geometry,
-       mathematical functions, statistics, physical units, IO,
-       visualization, and parallelization."""
+class RIrkernel(Package):
+    """R kernel for Jupyter"""
 
-    homepage = "https://sourcesup.renater.fr/projects/scientific-py/"
-    url      = "https://sourcesup.renater.fr/frs/download.php/file/4411/ScientificPython-2.8.1.tar.gz"
-    version('2.8.1', '73ee0df19c7b58cdf2954261f0763c77')
+    homepage = "https://irkernel.github.io/"
 
-    depends_on('py-numpy')
+    # Git repository
+    version('master', git='https://github.com/IRkernel/IRkernel.git',
+        tag='0.7')
 
-    extends('python')
+    extends('R')
+
+    depends_on('r-repr', type=nolink)
+    depends_on('r-irdisplay', type=nolink)
+    depends_on('r-evaluate', type=nolink)
+    depends_on('r-crayon', type=nolink)
+    depends_on('r-pbdzmq', type=nolink)
+    depends_on('r-devtools', type=nolink)
+    depends_on('r-uuid', type=nolink)
+    depends_on('r-digest', type=nolink)
 
     def install(self, spec, prefix):
-        setup_py('install', '--prefix=%s' % prefix)
+        R('CMD', 'INSTALL', '--library={0}'.format(self.module.r_lib_dir),
+          self.stage.source_path)
