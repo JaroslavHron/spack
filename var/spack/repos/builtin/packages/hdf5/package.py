@@ -34,13 +34,13 @@ class Hdf5(AutotoolsPackage):
     """
 
     homepage = "http://www.hdfgroup.org/HDF5/"
-    url = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.17/src/hdf5-1.8.17.tar.gz"
+    url = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz"
     list_url = "https://support.hdfgroup.org/ftp/HDF5/releases"
     list_depth = 3
 
-    version('1.10.0-patch1', '9180ff0ef8dc2ef3f61bd37a7404f295', url='https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0-patch1/src/hdf5-1.10.0-patch1.tar.gz')
+    version('1.10.0-patch1', '9180ff0ef8dc2ef3f61bd37a7404f295')
     version('1.10.0', 'bdc935337ee8282579cd6bc4270ad199')
-    version('1.8.17', '7d572f8f3b798a628b8245af0391a0ca', url='https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.17/src/hdf5-1.8.17.tar.gz')
+    version('1.8.17', '7d572f8f3b798a628b8245af0391a0ca')
     version('1.8.16', 'b8ed9a36ae142317f88b0c7ef4b9c618')
     version('1.8.15', '03cccb5b33dbe975fdcd8ae9dc021f24')
     version('1.8.13', 'c03426e9e77d7766944654280b467289')
@@ -199,20 +199,16 @@ HDF5 version {version} {version}
                 raise RuntimeError("HDF5 install check failed")
         shutil.rmtree(checkdir)
 
-    # def url_for_version(self, version):
-    #     base_url = "http://www.hdfgroup.org/ftp/HDF5/releases"
+    def url_for_version(self, version):
+        base_url = "https://support.hdfgroup.org/ftp/HDF5/releases"
 
-    #     if version == Version("1.2.2"):
-    #         return "{0}/hdf5-{1}.tar.gz".format(base_url, version)
-    #     elif version < Version("1.6.6"):
-    #         return "{0}/hdf5-{1}/hdf5-{2}.tar.gz".format(
-    #             base_url, version.up_to(2), version)
-    #     elif version < Version("1.7"):
-    #         return "{0}/hdf5-{1}/hdf5-{2}/src/hdf5-{2}.tar.gz".format(
-    #             base_url, version.up_to(2), version)
-    #     elif version < Version("1.10"):
-    #         return "{0}/hdf5-{1}/src/hdf5-{1}.tar.gz".format(
-    #             base_url, version)
-    #     else:
-    #         return "{0}/hdf5-{1}/hdf5-{2}/src/hdf5-{2}.tar.gz".format(
-    #             base_url, version.up_to(2), version)
+        if version == Version("1.2.2"):
+            return "{0}/hdf5-{1}.tar.gz".format(base_url, version)
+        elif version < Version("1.6.6"):
+            return "{0}/hdf5-{1}/hdf5-{2}.tar.gz".format(base_url, version.up_to(2), version)
+        elif version < Version("1.7"):
+            return "{0}/hdf5-{1}/hdf5-{2}/src/hdf5-{2}.tar.gz".format(base_url, version.up_to(2), version)
+        elif version < Version("1.10"):
+            return "{0}/hdf5-{1}/src/hdf5-{1}.tar.gz".format(base_url, version)
+        else:
+            return "{0}/hdf5-{1}/hdf5-{2}/src/hdf5-{2}.tar.gz".format(base_url, version.up_to(2), version)

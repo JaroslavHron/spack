@@ -15,8 +15,9 @@ For more information, visit http://www.fenicsproject.org
     """
 
     homepage = "https://bitbucket.org/fenics-project/ufl"
-    url      = "https://bitbucket.org/fenics-project/ufl/downloads/ufl-2016.1.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project/ufl/downloads/ufl-2016.2.0.tar.gz"
 
+    version('2016.2.0', git='https://bitbucket.org/fenics-project/ufl', tag='ufl-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/ufl', tag='ufl-2016.1.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/ufl', commit='f3d31f2aea32141b2789a42839d0b22d188b6f2a')
     version('1.6.0', git='https://bitbucket.org/fenics-project/ufl', tag='ufl-1.6.0')

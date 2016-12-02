@@ -18,8 +18,9 @@ For more information, visit http://www.fenicsproject.org
     """
 
     homepage = "https://bitbucket.org/fenics-project/fiat"
-    url      = "https://bitbucket.org/fenics-project/fiat/downloads/fiat-2016.1.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project/fiat/downloads/fiat-2016.2.0.tar.gz"
 
+    version('2016.2.0', git='https://bitbucket.org/fenics-project/fiat', tag='fiat-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/fiat', tag='fiat-2016.1.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/fiat', commit='5b7f77abcea7d7e9b67b597a32543a12547ddf9b')
     version('1.6.0', git='https://bitbucket.org/fenics-project/fiat', tag='fiat-1.6.0')

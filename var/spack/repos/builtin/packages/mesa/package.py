@@ -42,6 +42,7 @@ class Mesa(Package):
 
     depends_on("llvm", when='+llvm')
     depends_on("libxml2+python")
+    depends_on("libxcb")
 
     depends_on('pkg-config@0.9.0:', type='build')
 

@@ -11,13 +11,14 @@ class Dolfin(Package):
     """
 
     homepage = "https://bitbucket.org/fenics-project/dolfin"
-    url      = "https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-2016.1.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-2016.2.0.tar.gz"
 
+    version('2016.2.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-2016.1.0')
     version('1.6.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-1.6.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/dolfin', branch='jan/fix-slow-real')
 
-    for ver in ['@2016.1.0','@1.7.0dev','@1.6.0'] :
+    for ver in ['@2016.2.0','@2016.1.0','@1.7.0dev','@1.6.0'] :
         depends_on('fiat{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('instant{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('ufl{0}'.format(ver), type=("build","run"), when=ver)
@@ -29,6 +30,10 @@ class Dolfin(Package):
     depends_on('boost')
     depends_on('eigen@3.2.0:')
     depends_on('libxml2+python')
+
+    # Virtual dependencies
+    depends_on('blas')
+    depends_on('lapack')
     depends_on('mpi', when='+mpi')
 
     depends_on('py-numpy', type="alldeps")
@@ -110,6 +115,8 @@ class Dolfin(Package):
             '-DCMAKE_USE_RELATIVE_PATHS:BOOL=ON',
             '-DPYTHON_EXECUTABLE:FILEPATH={0}/python'.format(spec['python'].prefix.bin),
             '-DDOLFIN_ENABLE_OPENMP:BOOL=OFF',
+            '-DLAPACK_LIBRARIES:FILEPATH={0}'.format(spec['lapack'].lapack_libs),
+            '-DBLAS_LIBRARIES:FILEPATH={0}'.format(spec['blas'].blas_libs),
             '-DDOLFIN_ENABLE_CHOLMOD:BOOL={0}'.format(self.cmake_is_on('suite-sparse')),
             '-DDOLFIN_ENABLE_MPI:BOOL={0}'.format(self.cmake_is_on('mpi')),
             '-DDOLFIN_ENABLE_PARMETIS:BOOL=OFF',

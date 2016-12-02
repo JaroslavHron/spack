@@ -17,8 +17,9 @@ For more information, visit http://www.fenicsproject.org
     """
 
     homepage = "https://bitbucket.org/fenics-project/ffc"
-    url      = "https://bitbucket.org/fenics-project/ffc/downloads/ffc-2016.1.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project/ffc/downloads/ffc-2016.2.0.tar.gz"
 
+    version('2016.2.0', git='https://bitbucket.org/fenics-project/ffc', tag='ffc-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/ffc', tag='ffc-2016.1.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/ffc', commit='3ac2dad202525b5e7cb04b17c9c1f5df716334bd')
     version('1.6.0', git='https://bitbucket.org/fenics-project/ffc', tag='ffc-1.6.0')
@@ -34,6 +35,11 @@ For more information, visit http://www.fenicsproject.org
         depends_on('fiat{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('instant{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('ufl{0}'.format(ver), type=("build","run"), when=ver)
+
+    depends_on('dijitso@2016.2.0', type=("build","run"), when='@2016.2.0:')
+    depends_on('fiat@2016.2.0', type=("build","run"), when='@2016.2.0:')
+    depends_on('ufl@2016.2.0', type=("build","run"), when='@2016.2.0:')
+
     
     def install(self, spec, prefix):
         os.environ['SWIG'] = join_path(spec['swig'].prefix, 'bin', 'swig')

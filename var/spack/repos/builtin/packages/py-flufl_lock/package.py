@@ -32,6 +32,7 @@ class PyFluflLock(Package):
     version('2.4.1', '294da1c7a7473a5f9e8d3ad01b4a1259')
 
     extends('python')
+    depends_on('py-setuptools', type='build')
 
     def install(self, spec, prefix):
         python('setup.py', 'install', '--prefix=%s' % prefix)

@@ -33,11 +33,11 @@ class Netcdf(Package):
     """
 
     homepage = "http://www.unidata.ucar.edu/software/netcdf"
-    url      = "ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.3.3.tar.gz"
+    url      = "https://github.com/Unidata/netcdf-c/archive/v4.4.1.1.tar.gz"
 
-    version('4.4.1', '7843e35b661c99e1d49e60791d5072d8')
-    version('4.4.0', 'cffda0cbd97fdb3a06e9274f7aef438e')
-    version('4.3.3', '5fbd0e108a54bd82cb5702a73f56d2ae')
+    version('4.4.1.1', '9210fd5355bee868684d9b8f83064aa6')
+    version('4.4.1', 'b4e0308c7753af84034eb0984f2e36a7')
+    version('4.4.0', '4e3d3b05ab53d0ae6036a1a0fe1506e5')
 
     variant('mpi',     default=True,  description='Enables MPI parallelism')
     variant('hdf4',    default=False, description='Enable HDF4 support')

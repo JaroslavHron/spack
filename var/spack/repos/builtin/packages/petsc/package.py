@@ -68,7 +68,7 @@ class Petsc(Package):
     variant('superlu-dist', default=True,
             description='Activates support for SuperluDist (only parallel)')
 
-    download_libs=( 'superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch', 'metis', 'parmetis')
+    download_libs=( 'superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch')
 
     for lib in download_libs:
         variant(lib, default=True, description="Compile with internal {0} library".format(lib))
@@ -83,10 +83,10 @@ class Petsc(Package):
 
     # Other dependencies
     depends_on('boost', when='@:3.5+boost')
-    depends_on('metis@5:', when='+metis~download')
+    depends_on('metis@5:', when='+metis')
 
-    depends_on('hdf5+mpi', when='+hdf5+mpi~download')
-    depends_on('parmetis', when='+metis+mpi~download')
+    depends_on('hdf5+mpi', when='+hdf5+mpi')
+    depends_on('parmetis', when='+metis+mpi')
     # Hypre does not support complex numbers.
     # Also PETSc prefer to build it without internal superlu, likely due to
     # conflict in headers see
@@ -157,35 +157,33 @@ class Petsc(Package):
                         options.append('--with-{library}=1'.format(library=library))
                         options.append('--download-{library}=yes'.format(library=library))
 
-        else :
-
-            # Activates library support if needed
-            for library in ('metis', 'boost', 'hdf5', 'hypre', 'parmetis', 'mumps', 'scalapack'):
+        # Activates library support if needed
+        for library in ('metis', 'boost', 'hdf5', 'parmetis'):
+            options.append(
+                '--with-{library}={value}'.format(
+                    library=library, value=('1' if library in spec else '0'))
+                )
+            if library in spec:
                 options.append(
-                    '--with-{library}={value}'.format(
-                        library=library, value=('1' if library in spec else '0'))
+                    '--with-{library}-dir={path}'.format(
+                        library=library, path=spec[library].prefix)
                     )
-                if library in spec:
-                    options.append(
-                        '--with-{library}-dir={path}'.format(
-                            library=library, path=spec[library].prefix)
-                        )
-                    # PETSc does not pick up SuperluDist from the dir as they look for
-                    # superlu_dist_4.1.a
-                    if 'superlu-dist' in spec:
-                        options.extend([
-                                '--with-superlu_dist-include=%s' %
-                                spec['superlu-dist'].prefix.include,
-                                '--with-superlu_dist-lib=%s' %
-                                join_path(spec['superlu-dist'].prefix.lib,
-                                          'libsuperlu_dist.a'),
-                                '--with-superlu_dist=1'
-                                ])
-                    else:
-                        options.append(
-                            '--with-superlu_dist=0'
-                            )
-                                            
+                # PETSc does not pick up SuperluDist from the dir as they look for
+                # superlu_dist_4.1.a
+                #if 'superlu-dist' in spec:
+                #    options.extend([
+                #            '--with-superlu_dist-include=%s' %
+                #            spec['superlu-dist'].prefix.include,
+                #            '--with-superlu_dist-lib=%s' %
+                #            join_path(spec['superlu-dist'].prefix.lib,
+                #                      'libsuperlu_dist.a'),
+                #            '--with-superlu_dist=1'
+                #            ])
+                #else:
+                #    options.append(
+                #        '--with-superlu_dist=0'
+                #        )
+                    
         configure('--prefix=%s' % prefix, *options)
 
         # PETSc has its own way of doing parallel make.

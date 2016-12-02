@@ -31,12 +31,15 @@ class Scotch(Package):
        partitioning, graph clustering, and sparse matrix ordering."""
 
     homepage = "http://www.labri.fr/perso/pelegrin/scotch/"
-    url = "http://gforge.inria.fr/frs/download.php/latestfile/298/scotch_6.0.3.tar.gz"
+    url = "http://gforge.inria.fr/frs/download.php/latestfile/298/scotch_6.0.4.tar.gz"
     base_url = "http://gforge.inria.fr/frs/download.php/latestfile/298"
     list_url = "http://gforge.inria.fr/frs/?group_id=248"
 
+    version('6.0.4', 'd58b825eb95e1db77efe8c6ff42d329f')
     version('6.0.3', '10b0cc0f184de2de99859eafaca83cfc')
-    version('6.0.0', 'c50d6187462ba801f9a82133ee666e8e')
+    version('6.0.2b', '0da7429120177ca075ee0da248ffd7c2')
+    version('6.0.1', 'e22a664f66cfb2ddeab307245acc8f8c')
+    version('6.0.0', 'ba117428c0a6cd97d0c93e8b872bb3fe')
     version('5.1.10b', 'f587201d6cf5cf63527182fbfba70753')
 
     #patch('fix_makefile_esmumps.patch', level=2)
@@ -94,7 +97,7 @@ class Scotch(Package):
                 makefile_inc.extend([
                     'LIB       = .dylib',
                     'CLIBFLAGS = -dynamiclib -fPIC',
-                    'RANLIB    = echo',
+                    'RANLIB    = touch',
                     'AR        = $(CC)',
                     'ARFLAGS   = -dynamiclib $(LDFLAGS) -Wl,-install_name -Wl,%s/$(notdir $@) -undefined dynamic_lookup -o ' % prefix.lib  # noqa
                 ])
@@ -102,7 +105,7 @@ class Scotch(Package):
                 makefile_inc.extend([
                     'LIB       = .so',
                     'CLIBFLAGS = -shared -fPIC',
-                    'RANLIB    = echo',
+                    'RANLIB    = touch',
                     'AR        = $(CC)',
                     'ARFLAGS   = -shared $(LDFLAGS) -o'
                 ])
@@ -146,9 +149,6 @@ class Scotch(Package):
         makefile_inc.append('LDFLAGS   = %s' % ' '.join(ldflags))
 
         # General Features #
-
-        flex_path = os.path.join(self.spec['flex'].prefix.bin, 'flex')
-        bison_path = os.path.join(self.spec['bison'].prefix.bin, 'bison')
         makefile_inc.extend([
             'EXE       =',
             'OBJ       = .o',
@@ -159,8 +159,8 @@ class Scotch(Package):
             'MV        = mv',
             'CP        = cp',
             'CFLAGS    = %s' % ' '.join(cflags),
-            'LEX       = %s -Pscotchyy -olex.yy.c' % flex_path,
-            'YACC      = %s -pscotchyy -y -b y' % bison_path,
+            'LEX       = flex -v -Pscotchyy -olex.yy.c' , 
+            'YACC      = bison -v -pscotchyy -y -b y' , 
             'prefix    = %s' % self.prefix
         ])
 

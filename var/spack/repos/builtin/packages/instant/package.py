@@ -12,8 +12,9 @@ For more information, visit http://www.fenicsproject.org.
     """
 
     homepage = "https://bitbucket.org/fenics-project/instant"
-    url      = "https://bitbucket.org/fenics-project/instant/downloads/instant-2016.1.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project/instant/downloads/instant-2016.2.0.tar.gz"
 
+    version('2016.2.0', git='https://bitbucket.org/fenics-project/instant', tag='instant-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/instant', tag='instant-2016.1.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/instant', commit='406c1a85a8a90aa8a156a03b0e020abe035e056e')
     version('1.6.0', git='https://bitbucket.org/fenics-project/instant', tag='instant-1.6.0')

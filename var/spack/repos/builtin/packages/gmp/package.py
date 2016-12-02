@@ -29,8 +29,8 @@ class Gmp(AutotoolsPackage):
     """GMP is a free library for arbitrary precision arithmetic,
        operating on signed integers, rational numbers, and
        floating-point numbers."""
-    homepage = "https://gmplib.org"
-    url = "https://gmplib.org/download/gmp/gmp-6.0.0a.tar.bz2"
+    homepage = "http://gmplib.org"
+    url = "http://gmplib.org/download/gmp/gmp-6.0.0a.tar.bz2"
 
     version('6.1.1',  '4c175f86e11eb32d8bf9872ca3a8e11d')
     version('6.1.0',  '86ee6e54ebfc4a90b643a65e402c4048')

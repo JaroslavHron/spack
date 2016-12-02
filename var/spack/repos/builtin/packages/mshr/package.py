@@ -12,14 +12,15 @@ class Mshr(Package):
     """
 
     homepage = "https://bitbucket.org/fenics-project/mshr"
-    url      = "https://bitbucket.org/fenics-project/mshr/downloads/mshr-2016.1.0.tar.gz"
+    url      = "https://bitbucket.org/fenics-project/mshr/downloads/mshr-2016.2.0.tar.gz"
 
+    version('2016.2.0', git='https://bitbucket.org/fenics-project/mshr', tag='mshr-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/mshr', tag='mshr-2016.1.0')
     version('1.6.0', git='https://bitbucket.org/fenics-project/mshr', tag='mshr-1.6.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/mshr', commit='6e7cd5cd80e2d0c5c3040b19ac9f08b506be6727')
 
-    for ver in ['@2016.1.0','@1.7.0dev','@1.6.0'] :
-        depends_on('dolfin{0}'.format(ver), type=("build","run"), when=ver)
+    for ver in ['@2016.2.0','@2016.1.0','@1.7.0dev','@1.6.0'] :
+        depends_on('dolfin{0}'.format(ver), when=ver)
 
     extends('python')
     #depends_on('python@2.6:2.7', type="alldeps")
