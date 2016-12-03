@@ -84,7 +84,8 @@ class Petsc(Package):
 
     # Build dependencies
     depends_on('python @2.6:2.7')
-
+    depends_on('flex',when='+download', type='build')
+    
     # Other dependencies
     depends_on('boost', when='@:3.5+boost')
     depends_on('metis@5:', when='+metis')
