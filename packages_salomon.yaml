@@ -1,0 +1,123 @@
+packages:
+  all:
+    compiler: [gcc@5.3.0]
+    providers:
+      mpi: [openmpi@1.10.2]
+      blas: [openblas]
+      lapack: [openblas]
+  openblas:
+    modules: 
+      openblas@0.2.18: OpenBLAS/0.2.18-GCC-5.3.0-2.26-LAPACK-3.6.0
+    version: [0.2.18]
+    buildable: False
+  openmpi:
+    modules:
+      openmpi@1.10.2: OpenMPI/1.10.2-GCC-5.3.0-2.26
+    version: [1.10.2]
+    buildable: False
+  openssl:
+    paths:
+      openssl@system: /none
+    version: [system]
+    buildable: False
+  hwloc:
+    modules: 
+      hwloc@1.11.3: hwloc/1.11.3-GCC-5.3.0-2.26
+    version: [1.11.3]
+    buildable: False
+  readline:
+    paths:
+      readline@system: /none
+    version: [system]
+    buildable: False
+  m4:
+#    modules:
+#      m4@1.4.17: M4/1.4.17-GCCcore-5.3.0
+#    paths:
+#      m4@1.4.17: /apps/all/M4/1.4.17-GCCcore-5.3.0/bin
+#    buildable: False
+    version: [1.4.17]
+#  bison:
+#    version: [2.4.1]
+  flex:
+    version: [2.6.1]
+  libxml2:
+    variants: [ +python ]
+  qt:
+    modules:
+      qt@4.8.6: Qt/4.8.6
+    paths:
+      qt@4.8.6: /apps/all/Qt/4.8.6
+    buildable: False
+#    variants: [ +python ]
+  gettext:
+    modules: 
+      gettext@0.19.6: gettext/0.19.6
+    paths: 
+      gettext@0.19.6: /apps/all/gettext/0.19.6
+    buildable: False
+    version: [ 0.19.6 ]
+  libffi:
+    modules:
+      libffi@3.0.13: libffi/3.0.13 
+    paths:
+      libffi@3.0.13: /apps/all/libffi/3.0.13
+    buildable: False
+    version: [ 3.0.13 ]
+  glib:
+    modules:
+      glib@2.40.0: GLib/2.40.0
+    paths:
+      glib@2.40.0: /apps/all/GLib/2.40.0
+    buildable: False
+    version: [ 2.40.0 ]
+  arpack-ng:
+    version: [3.4.0]
+    variants: [ +mpi ]
+  boost:
+    version: [1.61.0]
+    variants: [ +taggedlayout, +atomic, +chrono, +date_time, +filesystem, +graph, +iostreams, +log, +math, +mpi, +multithreaded, +program_options, +python, +random, +regex, +serialization, +signals, +singlethreaded, +system, +thread, +timer, +wave]
+  eigen:
+    version: [3.2.7]
+    variants: [ +fftw, +metis, +mpfr, +scotch, +suitesparse]
+  hdf5:
+    version: [1.10.0-patch1]
+    variants: [+cxx, +fortran, +mpi, +szip, ~threadsafe]
+  hypre:
+    version: [2.10.1]
+    variants: [ +internal-superlu]
+  netcdf:
+    version: [4.4.1]
+    variants: [ +mpi ]
+  parmetis:
+    version: [4.0.3]
+  petsc:
+    version: [3.7.4]
+    variants: [ +download, +blacs, +boost, +double, +hdf5, +hypre, +metis, +ml, +mpi, +mumps, +pord, +ptscotch, +scalapack, +scotch, +suitesparse, +superlu, +superlu_dist ]
+  py-mpi4py:
+    version: [2.0.0]
+  py-petsc4py:
+    version: [3.7.0]
+  py-slepc4py:
+    version: [3.7.0]
+  scotch:
+    version: [6.0.4]
+    variants: [ +compression, +esmumps, +metis, +mpi ]
+  slepc:
+    version: [3.7.1]
+    variants: [ +arpack ]
+  trilinos:
+    version: [12.6.4]
+    variants: [ +boost, +hdf5, +hypre, +metis, ~mumps, ~python, +suite-sparse, ~superlu-dist ]
+  vtk:
+    version: [7.0.0]
+    variants: [ +opengl2, +sw ]
+#  fenics:
+#    version: [2016.2.0]
+#    variants: [+doc, +hdf5, +mpi, +mpi4py, +petsc, +petsc4py, +scotch, +slepc, +slepc4py, +suitesparse, +trilinos, ~vtk ]
+  dolfin:
+    version: [2016.2.0]
+    variants: [+doc, +hdf5, +mpi, +mpi4py, +petsc, +petsc4py, +scotch, +slepc, +slepc4py, +suitesparse, +trilinos, +vtk ]
+  mshr:
+    version: [2016.2.0]
+
