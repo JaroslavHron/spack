@@ -44,7 +44,7 @@ class Vtk(Package):
     variant('python', default=True, description='Build the python modules')
     variant('sw', default=True, description='Build only software renderer')
 
-    patch('gcc.patch')
+    #patch('gcc.patch')
 
     depends_on('cmake', type='build')
     depends_on('qt')

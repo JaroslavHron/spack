@@ -46,6 +46,7 @@ class Glib(Package):
     depends_on('libffi')
     depends_on('zlib')
     depends_on('gettext')
+    depends_on('python')
     depends_on('pcre+utf', when='@2.48:')
 
     # The following patch is needed for gcc-6.1
@@ -69,7 +70,11 @@ class Glib(Package):
                                       "share", "aclocal"),
                    "-I", os.path.join(spec['libtool'].prefix,
                                       "share", "aclocal"),
+                   "-I", os.path.join(spec['gettext'].prefix,
+                                      "share", "aclocal"),
                    )
-        configure("--prefix=%s" % prefix)
+
+        os.environ['LDFLAGS'] = '-L{0}'.format(spec['gettext'].prefix.lib)
+        configure("--prefix=%s" % prefix, '--with-python=%s/python' % spec['python'].prefix.bin )
         make()
         make("install", parallel=False)
