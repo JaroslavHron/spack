@@ -37,17 +37,60 @@ class Fenics(Package):
     homepage = "http://fenicsproject.org/"
     url      = "https://bitbucket.org/fenics-project"
 
-    #version('2016.1.0', '92e8d00f6487a575987201f0b0d19173', url='https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-2016.1.0.tar.gz')
+    #version('2016.1.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-2016.1.0')
+    #version('1.7.0dev', git='https://bitbucket.org/fenics-project/dolfin', commit='c119915a877bf543e139f159274aad19a796d2a2')
+    #version('1.6.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-1.6.0')
 
-    version('2016.1.0', git='https://bitbucket.org/fenics-project/dolfin.git', tag='dolfin-2016.1.0')
-    version('jan/fix-slow-real', git='https://bitbucket.org/fenics-project/dolfin.git', commit='c119915a877bf543e139f159274aad19a796d2a2')
+    #res=[ 'ufl', 'fiat', 'instant', 'ffc', 'mshr']
+    #for i in res :
+    #    resource(name=i, \
+    #             url='https://bitbucket.org/fenics-project/{0}'.format(i), \
+    #             tag='{0}-2016.1.0'.format(i), \
+    #             when='@2016.1.0', placement=i)
+
+
+    releases = {
+        '2016.1.0': {
+            'dolfin': {'tag': 'dolfin-2016.1.0'},
+            'resources': {
+                'instant': {'tag': 'instant-2016.1.0'},
+                'ffc': {'tag': 'ffc-2016.1.0'},
+                'fiat': {'tag': 'fiat-2016.1.0'},
+                'ufl': {'tag': 'ufl-2016.1.0'},
+                'mshr': {'tag': 'mshr-2016.1.0'}
+            },
+        },
+        '1.6.0': {
+            'dolfin': {'tag': 'dolfin-1.6.0'},
+            'resources': {
+                'instant': {'tag': 'instant-1.6.0'},
+                'ffc': {'tag': 'ffc-1.6.0'},
+                'fiat': {'tag': 'fiat-1.6.0'},
+                'ufl': {'tag': 'ufl-1.6.0'},
+                'uflacs-deprecated': {'tag': 'uflacs-1.6.0'},
+                'mshr': {'tag': 'mshr-1.6.0'}
+            }
+        },
+        '1.7.0dev': {
+            'dolfin': {'branch': 'jan/fix-slow-real'},
+            'resources': {
+                'instant': {'commit': '406c1a85a8a90aa8a156a03b0e020abe035e056e'},
+                'ffc': {'commit': '3ac2dad202525b5e7cb04b17c9c1f5df716334bd'},
+                'fiat': {'commit': '5b7f77abcea7d7e9b67b597a32543a12547ddf9b'},
+                'ufl': {'commit': 'f3d31f2aea32141b2789a42839d0b22d188b6f2a'},
+                'uflacs-deprecated': {'commit': '073fd2bb24bef7929bf6c12b55b78904311a9245'},
+                'mshr': {'commit': '6e7cd5cd80e2d0c5c3040b19ac9f08b506be6727'}
+            }
+        }
+    }
     
-    resource(name='ufl', url='https://bitbucket.org/fenics-project/ufl/downloads/ufl-2016.1.0.tar.gz', md5='37433336e5c9b58d1d5ab4acca9104a7', placement='ufl')
-    resource(name='fiat', url='https://bitbucket.org/fenics-project/fiat/downloads/fiat-2016.1.0.tar.gz', md5='ac0c49942831ee434301228842bcc280', placement='fiat')
-    resource(name='instant', url='https://bitbucket.org/fenics-project/instant/downloads/instant-2016.1.0.tar.gz', md5='0e3dbb464c4d90d691f31f0fdd63d4f6', placement='instant')
-    resource(name='ffc', url='https://bitbucket.org/fenics-project/ffc/downloads/ffc-2016.1.0.tar.gz', md5='35457ae164e481ba5c9189ebae060a47', placement='ffc')
-    resource(name='mshr', url='https://bitbucket.org/fenics-project/mshr/downloads/mshr-2016.1.0.tar.gz', md5='a2b76539832a30901b28b604a496ce64', placement='mshr')
-
+    
+    for ver, release in releases.items():
+        version(ver, **dict(release['dolfin'], **{'git': 'https://bitbucket.org/fenics-project/dolfin'}))
+        for name, tag in release['resources'].items():
+            resource(**dict(tag, **{'name': name, 'git': 'https://bitbucket.org/fenics-project/{0}'.format(name), 'when': '@{0}'.format(ver), 'placement': name}))
+            
+        
     variant('petsc',        default=True,  description='Compile with PETSc')
     variant('hdf5',         default=True,  description='Compile with HDF5')
     variant('scotch',       default=True,  description='Compile with Scotch')
@@ -63,7 +106,7 @@ class Fenics(Package):
     variant('petsc4py',     default=True,  description='Uses PETSc4py')
     variant('slepc4py',     default=True,  description='Uses SLEPc4py')
 
-    # variant('pastix',       default=True,  description='Compile with Pastix')
+    variant('pastix',       default=False,  description='Compile with Pastix')
 
     variant('doc',     default=True,  description='Create docs.')
     
@@ -74,6 +117,7 @@ class Fenics(Package):
 
     depends_on('python@2.6:2.7', type="alldeps")
 
+    depends_on('py-mpi4py', when='+mpi', type="alldeps")
     depends_on('petsc@3.7:', when='+petsc')
     depends_on('slepc@3.7:', when='+slepc')
     depends_on('py-petsc4py', when='+petsc4py', type="alldeps")
@@ -89,7 +133,6 @@ class Fenics(Package):
     depends_on('gmp')
     depends_on('mpfr')
     depends_on('mpi', when='+mpi')
-    depends_on('py-mpi4py', when='+mpi', type="alldeps")
     depends_on('hdf5', when='+hdf5')
     depends_on('scotch', when='+scotch')
     depends_on('trilinos', when='+trilinos')
@@ -160,5 +203,3 @@ class Fenics(Package):
             cmake('..', *cmake_args)
             make()
             make('install')
-
-        

@@ -48,7 +48,7 @@ class R(Package):
     version('3.1.3', '53a85b884925aa6b5811dfc361d73fc4')
     version('3.1.2', '3af29ec06704cbd08d4ba8d69250ae74')
 
-    variant('external-lapack', default=False,
+    variant('external-lapack', default=True,
             description='Links to externally installed BLAS/LAPACK')
 
     # Virtual dependencies
@@ -85,7 +85,7 @@ class R(Package):
                           '--enable-BLAS-shlib',
                           '--enable-R-framework=no']
         if '+external-lapack' in spec:
-            configure_args.extend(['--with-blas', '--with-lapack'])
+            configure_args.extend(['--with-blas=-L{0} -lblas'.format(spec['blas'].prefix.lib), '--with-lapack=-L{0} -llapack'.format(spec['lapack'].prefix.lib)])
 
         configure(*configure_args)
         make()
