@@ -40,8 +40,7 @@ def _verbs_dir():
         # Get path to executable
         path = ibv_devices.exe[0]
         # Remove executable name and "bin" directory
-        path = os.path.dirname(path)
-        path = os.path.dirname(path)
+        path = ancestor(path, n=2)
         # There's usually no "/include" on Unix; use "/usr/include" instead
         if path == "/":
             path = "/usr"
@@ -61,6 +60,19 @@ def _mxm_dir():
     if os.path.isdir(path):
         return path
     else:
+        return None
+
+def _slurm_dir():
+    try:
+        # Try to locate slurm by looking for a utility in the path
+        sinfo = which("sinfo")
+        # Run it (silently) to ensure it works
+        sinfo(output=str, error=str)
+        # Get path to executable
+        path = sinfo.exe[0]
+        # Remove executable name and "bin" directory
+        return ancestor(path, n=2)
+    except:
         return None
 
 
@@ -234,12 +246,14 @@ class Openmpi(AutotoolsPackage):
         spack_env.set('MPICC',  join_path(self.prefix.bin, 'mpicc'))
         spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpic++'))
         spack_env.set('MPIF77', join_path(self.prefix.bin, 'mpif77'))
+        spack_env.set('MPIFC', join_path(self.prefix.bin, 'mpifort'))
         spack_env.set('MPIF90', join_path(self.prefix.bin, 'mpif90'))
 
         spack_env.set('OMPI_CC', spack_cc)
         spack_env.set('OMPI_CXX', spack_cxx)
         spack_env.set('OMPI_FC', spack_fc)
         spack_env.set('OMPI_F77', spack_f77)
+        spack_env.set('OMPI_F90', spack_fc)
 
     def setup_dependent_package(self, module, dependent_spec):
         self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
@@ -275,6 +289,28 @@ class Openmpi(AutotoolsPackage):
             return '--without-{0}'.format(opt)
         line = '--with-{0}'.format(opt)
         path = _mxm_dir()
+        if (path is not None):
+            line += '={0}'.format(path)
+        return line
+
+    def with_or_without_slurm(self, activated):
+        opt = 'slurm'
+        # If the option has not been activated return --without-slurm
+        if not activated:
+            return '--without-{0}'.format(opt)
+        line = '--with-{0}'.format(opt)
+        path = _slurm_dir()
+        if (path is not None):
+            line += '={0}'.format(path)
+        return line
+
+    def with_or_without_pmi(self, activated):
+        opt = 'pmi'
+        # If the option has not been activated return --without-pmi
+        if not activated:
+            return '--without-{0}'.format(opt)
+        line = '--with-{0}'.format(opt)
+        path = _slurm_dir()
         if (path is not None):
             line += '={0}'.format(path)
         return line
