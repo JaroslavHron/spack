@@ -61,7 +61,8 @@ class Petsc(Package):
     depends_on('mpi', when='+mpi')
 
     # Build dependencies
-    depends_on('python@2.6:2.8', type='build')
+    # wait for fix for build dependeces in spack
+    #depends_on('python@2.6:2.8', type='build')
 
     # Other dependencies
     depends_on('boost', when='+boost')
