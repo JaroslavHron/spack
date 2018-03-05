@@ -46,7 +46,8 @@ class Slepc(Package):
     variant('arpack', default=True, description='Enables Arpack wrappers')
 
     # NOTE: make sure PETSc and SLEPc use the same python.
-    depends_on('python@2.6:2.8', type='build')
+    #depends_on('python@2.6:2.8', type='build')
+    depends_on('python', type='build')
     # Cannot mix release and development versions of SLEPc and PETSc:
     depends_on('petsc@develop', when='@develop')
     depends_on('petsc@3.8:3.8.99', when='@3.8:3.8.99')

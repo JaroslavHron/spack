@@ -1,32 +1,6 @@
-##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# This file is part of Spack.
-# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
-# LLNL-CODE-647188
-#
-# For details, see https://github.com/spack/spack
-# Please also see the NOTICE and LICENSE files for our notice and the LGPL.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License (as
-# published by the Free Software Foundation) version 2.1, February 1999.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and
-# conditions of the GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-##############################################################################
-
 import os
 import sys
 from spack import *
-
 
 class Petsc(Package):
     """PETSc is a suite of data structures and routines for the scalable
@@ -58,44 +32,23 @@ class Petsc(Package):
     version('3.5.1', 'a557e029711ebf425544e117ffa44d8f')
     version('3.4.4', '7edbc68aa6d8d6a3295dd5f6c2f6979d')
 
-    variant('shared',  default=True,
-            description='Enables the build of shared libraries')
+    variant('download',  default=True,  description='Download all packages')
+    variant('shared',  default=True,  description='Enables the build of shared libraries')
     variant('mpi',     default=True,  description='Activates MPI support')
-    variant('double',  default=True,
-            description='Switches between single and double precision')
+    variant('double',  default=True,  description='Switches between single and double precision')
     variant('complex', default=False, description='Build with complex numbers')
     variant('debug',   default=False, description='Compile in debug mode')
+    variant('int64', default=False, description='Compile with 64bit indices')
+    variant('clanguage', default='C', values=('C', 'C++'), description='Specify C (recommended) or C++ to compile PETSc', multi=False)
 
-    variant('metis',   default=True,
-            description='Activates support for metis and parmetis')
-    variant('hdf5',    default=True,
-            description='Activates support for HDF5 (only parallel)')
+    download_libs=['superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch']
+
+    for lib in download_libs:
+        variant(lib, default=True, description="Compile with internal {0} library".format(lib))
+
+    variant('metis',   default=True,  description='Activates support for metis and parmetis')
+    variant('hdf5',    default=True,  description='Activates support for HDF5 (only parallel)')
     variant('boost',   default=True,  description='Activates support for Boost')
-    variant('hypre',   default=True,
-            description='Activates support for Hypre (only parallel)')
-    # Mumps is disabled by default, because it depends on Scalapack
-    # which is not portable to all HPC systems
-    variant('mumps',   default=False,
-            description='Activates support for MUMPS (only parallel and 32bit indices)')
-    variant('superlu-dist', default=True,
-            description='Activates support for SuperluDist (only parallel)')
-    variant('trilinos', default=False,
-            description='Activates support for Trilinos (only parallel)')
-    variant('int64', default=False,
-            description='Compile with 64bit indices')
-    variant('clanguage', default='C', values=('C', 'C++'),
-            description='Specify C (recommended) or C++ to compile PETSc',
-            multi=False)
-
-    # 3.8.0 has a build issue with MKL - so list this conflict explicitly
-    conflicts('^intel-mkl', when='@3.8.0')
-
-    # temporary workaround Clang 8.1.0 with XCode 8.3 on macOS, see
-    # https://bitbucket.org/petsc/petsc/commits/4f290403fdd060d09d5cb07345cbfd52670e3cbc
-    # the patch is an adaptation of the original commit to 3.7.5
-    if sys.platform == "darwin":
-        patch('macos-clang-8.1.0.diff',
-              when='@3.7.5%clang@8.1.0:')
 
     # Virtual dependencies
     # Git repository needs sowing to build Fortran interface
@@ -111,41 +64,15 @@ class Petsc(Package):
     depends_on('python@2.6:2.8', type='build')
 
     # Other dependencies
-    depends_on('boost', when='@:3.5+boost')
-    depends_on('metis@5:~int64+real64', when='+metis~int64+double')
-    depends_on('metis@5:+int64', when='+metis+int64~double')
+    depends_on('boost', when='+boost')
+    depends_on('flex', when='+ptscotch')
     depends_on('metis@5:~int64+real64', when='+metis~int64+double')
     depends_on('metis@5:+int64', when='+metis+int64~double')
 
     depends_on('hdf5+mpi+hl', when='+hdf5+mpi')
     depends_on('zlib', when='+hdf5')
     depends_on('parmetis', when='+metis+mpi')
-    # Hypre does not support complex numbers.
-    # Also PETSc prefer to build it without internal superlu, likely due to
-    # conflict in headers see
-    # https://bitbucket.org/petsc/petsc/src/90564b43f6b05485163c147b464b5d6d28cde3ef/config/BuildSystem/config/packages/hypre.py
-    depends_on('hypre~internal-superlu~int64', when='+hypre+mpi~complex~int64')
-    depends_on('hypre@xsdk-0.2.0~internal-superlu+int64', when='@xsdk-0.2.0+hypre+mpi~complex+int64')
-    depends_on('hypre@xsdk-0.2.0~internal-superlu~int64', when='@xsdk-0.2.0+hypre+mpi~complex~int64')
-    depends_on('hypre@develop~internal-superlu+int64', when='@develop+hypre+mpi~complex+int64')
-    depends_on('hypre@develop~internal-superlu~int64', when='@develop+hypre+mpi~complex~int64')
-    depends_on('hypre~internal-superlu+int64', when='+hypre+mpi~complex+int64')
-    depends_on('superlu-dist@:4.3~int64', when='@3.4.4:3.6.4+superlu-dist+mpi~int64')
-    depends_on('superlu-dist@:4.3+int64', when='@3.4.4:3.6.4+superlu-dist+mpi+int64')
-    depends_on('superlu-dist@5.0.0:~int64', when='@3.7:3.7.99+superlu-dist+mpi~int64')
-    depends_on('superlu-dist@5.0.0:+int64', when='@3.7:3.7.99+superlu-dist+mpi+int64')
-    depends_on('superlu-dist@5.2:5.2.99~int64', when='@3.8:3.8.99+superlu-dist+mpi~int64')
-    depends_on('superlu-dist@5.2:5.2.99+int64', when='@3.8:3.8.99+superlu-dist+mpi+int64')
-    depends_on('superlu-dist@xsdk-0.2.0~int64', when='@xsdk-0.2.0+superlu-dist+mpi~int64')
-    depends_on('superlu-dist@xsdk-0.2.0+int64', when='@xsdk-0.2.0+superlu-dist+mpi+int64')
-    depends_on('superlu-dist@develop~int64', when='@develop+superlu-dist+mpi~int64')
-    depends_on('superlu-dist@develop+int64', when='@develop+superlu-dist+mpi+int64')
-    depends_on('mumps+mpi', when='+mumps+mpi~int64')
-    depends_on('scalapack', when='+mumps+mpi~int64')
-    depends_on('trilinos@12.6.2:', when='@3.7.0:+trilinos+mpi')
-    depends_on('trilinos@xsdk-0.2.0', when='@xsdk-0.2.0+trilinos+mpi')
-    depends_on('trilinos@develop', when='@xdevelop+trilinos+mpi')
-
+            
     def mpi_dependent_options(self):
         if '~mpi' in self.spec:
             compiler_opts = [
@@ -169,19 +96,24 @@ class Petsc(Package):
                 errors = ['incompatible variants given'] + errors
                 raise RuntimeError('\n'.join(errors))
         else:
+            opt_flags='-O2 -mfpmath=sse -fexpensive-optimizations'
             compiler_opts = [
-                '--with-cc=%s' % self.spec['mpi'].mpicc,
-                '--with-cxx=%s' % self.spec['mpi'].mpicxx,
-                '--with-fc=%s' % self.spec['mpi'].mpifc
+                '--with-mpi=1',
+                '--with-mpi-dir=%s' % self.spec['mpi'].prefix,
+#                '--with-cc=%s' % self.spec['mpi'].mpicc,
+#                '--with-cxx=%s' % self.spec['mpi'].mpicxx,
+#                '--with-fc=%s' % self.spec['mpi'].mpifc,
+                '--CFLAGS=-march=native -pipe',
+                '--CXXFLAGS=-march=native -pipe',
+                '--FFLAGS=-march=native -pipe',
+                '--COPTFLAGS=%s' % opt_flags,
+                '--CXXOPTFLAGS=%s' % opt_flags,
+                '--FOPTFLAGS=%s' % opt_flags
             ]
         return compiler_opts
 
     def install(self, spec, prefix):
-        options = ['--with-ssl=0',
-                   '--with-x=0',
-                   '--download-c2html=0',
-                   '--download-sowing=0',
-                   '--download-hwloc=0']
+        options = ['--with-ssl=0','--with-x=0','--with-pic=1','--with-single-library=1','--with-clanguage=c','--with-c++-support']
         options.extend(self.mpi_dependent_options())
         options.extend([
             '--with-precision=%s' % (
@@ -220,8 +152,7 @@ class Petsc(Package):
             ])
 
         # Activates library support if needed
-        for library in ('metis', 'boost', 'hdf5', 'hypre', 'parmetis',
-                        'mumps', 'trilinos', 'zlib'):
+        for library in ('boost', 'hdf5', 'metis', 'parmetis'):
             options.append(
                 '--with-{library}={value}'.format(
                     library=library, value=('1' if library in spec else '0'))
@@ -231,22 +162,11 @@ class Petsc(Package):
                     '--with-{library}-dir={path}'.format(
                         library=library, path=spec[library].prefix)
                 )
-        # PETSc does not pick up SuperluDist from the dir as they look for
-        # superlu_dist_4.1.a
-        if 'superlu-dist' in spec:
-            options.extend([
-                '--with-superlu_dist-include=%s' %
-                spec['superlu-dist'].prefix.include,
-                '--with-superlu_dist-lib=%s' %
-                join_path(spec['superlu-dist'].prefix.lib,
-                          'libsuperlu_dist.a'),
-                '--with-superlu_dist=1'
-            ])
-        else:
-            options.append(
-                '--with-superlu_dist=0'
-            )
 
+        for lib in self.download_libs:
+            if "+{0}".format(lib) in spec:
+                options.append('--download-{library}=yes'.format(library=lib))
+                                            
         configure('--prefix=%s' % prefix, *options)
 
         # PETSc has its own way of doing parallel make.

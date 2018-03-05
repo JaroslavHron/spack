@@ -1,13 +1,13 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2016, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
 # Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
 # LLNL-CODE-647188
 #
-# For details, see https://github.com/spack/spack
-# Please also see the NOTICE and LICENSE files for our notice and the LGPL.
+# For details, see https://github.com/llnl/spack
+# Please also see the LICENSE file for our notice and the LGPL.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License (as
@@ -24,16 +24,11 @@
 ##############################################################################
 from spack import *
 
+class PyFluflLock(PythonPackage):
+    """flufl.lock"""
+    homepage = "https://pypi.python.org/pypi/flufl.lock"
+    url      = "https://pypi.python.org/packages/source/f/flufl.lock/flufl.lock-2.4.1.tar.gz"
 
-class PySlepc4py(PythonPackage):
-    """This package provides Python bindings for the SLEPc package.
-    """
-    homepage = "https://pypi.python.org/pypi/slepc4py"
-    url      = "https://pypi.io/packages/source/s/slepc4py/slepc4py-3.7.0.tar.gz"
+    version('2.4.1', '294da1c7a7473a5f9e8d3ad01b4a1259')
 
-    version('3.8.0', 'c0657f2197237890c62ba8c30829c63a')
-    version('3.7.0', 'c4775e88b0825c7313629c01de60ecb2')
-
-    depends_on('py-setuptools', type='build')
-    depends_on('py-petsc4py', type=('build', 'run'))
-    depends_on('slepc')
+    depends_on('py-setuptools', type="build")
