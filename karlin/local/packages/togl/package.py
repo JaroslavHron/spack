@@ -25,13 +25,19 @@
 from spack import *
 
 
-class PyFunctools32(PythonPackage):
-    """Backport of the functools module from Python 3.2.3 for use on 2.7 and
-    PyPy."""
+class Togl(AutotoolsPackage):
+    """A Tcl/Tk widget for OpenGL rendering."""
 
-    homepage = "https://github.com/MiCHiLU/python-functools32"
-    url      = "https://pypi.io/packages/source/f/functools32/functools32-3.2.3-2.tar.gz"
+    homepage = "https://sourceforge.net/projects/togl"
+    url      = "https://downloads.sourceforge.net/project/togl/Togl/2.0/Togl2.0-src.tar.gz"
 
-    version('3.2.3-2', '09f24ffd9af9f6cd0f63cb9f4e23d4b2')
+    version('2.0', '64d385c59b8cb31b9d2c921d0cc37503')
 
-    #depends_on("python@:2.8")
+    depends_on('tcl')
+    depends_on('tk')
+    depends_on('mesa+llvm')
+
+    def configure_args(self):
+        args = [ '--with-tcl={}'.format(self.spec['tcl'].prefix.lib) , \
+                 '--with-tk={}'.format(self.spec['tk'].prefix.lib) ]
+        return args

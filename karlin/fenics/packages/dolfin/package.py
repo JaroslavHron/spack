@@ -33,10 +33,15 @@ class Dolfin(CMakePackage):
     depends_on('pkgconfig')
     depends_on('mpi', when='+mpi')
 
-    depends_on('py-numpy')
+    # back ports to python2 - not working in spack
+    #depends_on('py-functools32', type=('build', 'run'), when='@2017.1.0:^python@:2.7')
+    #depends_on('py-subprocess32', type=('build', 'run'), when='@2017.1.0:^python@:2.7')
     depends_on('py-ply')
     depends_on('py-six')
+
+    depends_on('py-numpy')
     depends_on('py-sympy')
+    depends_on('py-scipy')
 
     depends_on('py-mpi4py', when='+mpi')
 
@@ -71,13 +76,13 @@ class Dolfin(CMakePackage):
     depends_on('cmake')
     depends_on('swig')
 
-    variant('petsc',        default=False,  description='Compile with PETSc')
+    variant('petsc',        default=True,  description='Compile with PETSc')
     variant('hdf5',         default=True,  description='Compile with HDF5')
     variant('scotch',       default=True,  description='Compile with Scotch')
     variant('slepc',        default=True,  description='Compile with SLEPc')
     variant('trilinos',     default=True,  description='Compile with Trilinos')
     variant('suitesparse',  default=True,  description='Compile with SuiteSparse solvers')
-    variant('vtk',          default=True, description='Compile with VTK')
+    variant('vtk',          default=False, description='Compile with VTK')
     variant('mpi',          default=True,  description='Enables the distributed memory support')
     variant('shared',       default=True,  description='Enables the build of shared libraries')
     variant('debug',        default=False, description='Builds a debug version of the libraries')
@@ -94,13 +99,12 @@ class Dolfin(CMakePackage):
         spec = self.spec
         
         opts = [
-            '-DCMAKE_BUILD_TYPE:STRING={0}'.format('Debug' if 'debug' in spec else 'Release'),
             '-DCMAKE_C_COMPILER={0}'.format(spec['mpi'].mpicc), 
             '-DCMAKE_CXX_COMPILER={0}'.format(spec['mpi'].mpicxx) ,
             '-DBUILD_SHARED_LIBS:BOOL=ON',
             '-DDOLFIN_SKIP_BUILD_TESTS:BOOL=OFF',
+            '-DDOLFIN_ENABLE_DOCS:BOOL={0}'.format(self.cmake_is_on('doc')),
             '-DDOLFIN_AUTO_DETECT_MPI:BOOL=OFF',
-            '-DCMAKE_USE_RELATIVE_PATHS:BOOL=ON',
             '-DDOLFIN_USE_PYTHON3={0}'.format('OFF' if spec['python'].version < Version('3.0.0') else 'ON'),
             '-DPYTHON_EXECUTABLE:FILEPATH={0}/python'.format(spec['python'].prefix.bin),
             '-DDOLFIN_ENABLE_OPENMP:BOOL=OFF',
@@ -108,10 +112,12 @@ class Dolfin(CMakePackage):
             '-DDOLFIN_ENABLE_MPI:BOOL={0}'.format(self.cmake_is_on('mpi')),
             '-DDOLFIN_ENABLE_PARMETIS:BOOL=OFF',
             '-DDOLFIN_ENABLE_PETSC:BOOL={0}'.format(self.cmake_is_on('petsc')),
+            '-DPETSC_DIR:PATH={0}'.format(spec['petsc'].prefix),
             '-DDOLFIN_ENABLE_PETSC4PY:BOOL={0}'.format(self.cmake_is_on('py-petsc4py')),
             '-DDOLFIN_ENABLE_PYTHON:BOOL={0}'.format(self.cmake_is_on('python')),
             '-DDOLFIN_ENABLE_SCOTCH:BOOL={0}'.format(self.cmake_is_on('scotch')),
             '-DDOLFIN_ENABLE_SLEPC:BOOL={0}'.format(self.cmake_is_on('slepc')),
+            '-DSLEPC_DIR:PATH={0}'.format(spec['slepc'].prefix),
             '-DDOLFIN_ENABLE_SLEPC4PY:BOOL={0}'.format(self.cmake_is_on('py-slepc4py')),
             '-DDOLFIN_ENABLE_SPHINX:BOOL={0}'.format(self.cmake_is_on('py-sphinx')),
             '-DDOLFIN_ENABLE_TRILINOS:BOOL={0}'.format(self.cmake_is_on('trilinos')),
@@ -131,14 +137,15 @@ class Dolfin(CMakePackage):
         if '+shared' in spec:
             opts.append('-DSHARED:BOOL=ON')
 
-        #os.environ['CC'] = spec['mpi'].mpicc
-        #os.environ['CXX'] = spec['mpi'].mpicxx
-        #os.environ['F77'] = spec['mpi'].mpif77
-        #os.environ['FC'] = spec['mpi'].mpifc
+        os.environ['CC'] = spec['mpi'].mpicc
+        os.environ['CXX'] = spec['mpi'].mpicxx
+        os.environ['F77'] = spec['mpi'].mpif77
+        os.environ['FC'] = spec['mpi'].mpifc
         
         os.environ['PETSC_DIR'] = spec['petsc'].prefix
+        os.environ['SLEPC_DIR'] = spec['slepc'].prefix
         os.environ['MPFR_DIR'] = spec['mpfr'].prefix
-        os.environ['SPHINX_DIR'] = spec['py-sphinx'].prefix
+        if 'py-sphinx' in self.spec : os.environ['SPHINX_DIR'] = spec['py-sphinx'].prefix
         os.environ['SCOTCH_DIR'] = spec['scotch'].prefix
         os.environ['HDF5_DIR'] = spec['hdf5'].prefix
         os.environ['HDF5_ROOT'] = spec['hdf5'].prefix

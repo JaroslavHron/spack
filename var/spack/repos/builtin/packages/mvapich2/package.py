@@ -106,9 +106,10 @@ class Mvapich2(AutotoolsPackage):
     depends_on('bison', type='build')
     depends_on('libpciaccess', when=(sys.platform != 'darwin'))
     depends_on('cuda', when='+cuda')
+    depends_on('slurm', when='process_managers=slurm')
 
     filter_compiler_wrappers(
-        'mpicc', 'mpicxx', 'mpif77', 'mpif90', 'mpifort', relative_root='bin'
+        'mpicc', 'mpicxx', 'mpif77', 'mpif90', 'mpifort', 'mpifc', relative_root='bin'
     )
 
     def url_for_version(self, version):
@@ -132,8 +133,12 @@ class Mvapich2(AutotoolsPackage):
         if 'process_managers=slurm' in spec:
             if self.version > Version('2.0'):
                 opts = [
-                    '--with-pmi=pmi2',
-                    '--with-pm=slurm'
+                    '--with-pmi=pmi1',
+                    '--with-pm=slurm',
+                    '--with-slurm={}'.format(self.spec['slurm'].prefix),
+                    #'--with-slurm-include={}'.format(self.spec['slurm'].prefix.include),
+                    #'--with-slurm-lib={}'.format(self.spec['slurm'].prefix.lib)
+                    '--enable-slurm=yes'
                 ]
             else:
                 opts = [
@@ -166,12 +171,25 @@ class Mvapich2(AutotoolsPackage):
     def setup_environment(self, spack_env, run_env):
         spec = self.spec
         if 'process_managers=slurm' in spec and spec.satisfies('@2.0:'):
-            run_env.set('SLURM_MPI_TYPE', 'pmi2')
+            run_env.set('SLURM_MPI_TYPE', 'pmi')
+
+    @property
+    def libs(self):
+        query_parameters = self.spec.last_query.extra_parameters
+        libraries = ['libmpi']
+
+        if 'cxx' in query_parameters:
+            libraries = ['libmpi_cxx'] + libraries
+
+        return find_libraries(
+            libraries, root=[self.prefix], shared=True, recursive=True
+        )
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         spack_env.set('MPICC',  join_path(self.prefix.bin, 'mpicc'))
-        spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpicxx'))
+        spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpic++'))
         spack_env.set('MPIF77', join_path(self.prefix.bin, 'mpif77'))
+        spack_env.set('MPIFC', join_path(self.prefix.bin, 'mpifort'))
         spack_env.set('MPIF90', join_path(self.prefix.bin, 'mpif90'))
 
         spack_env.set('MPICH_CC', spack_cc)
@@ -181,10 +199,13 @@ class Mvapich2(AutotoolsPackage):
         spack_env.set('MPICH_FC', spack_fc)
 
     def setup_dependent_package(self, module, dependent_spec):
-        self.spec.mpicc  = join_path(self.prefix.bin, 'mpicc')
-        self.spec.mpicxx = join_path(self.prefix.bin, 'mpicxx')
-        self.spec.mpifc  = join_path(self.prefix.bin, 'mpif90')
+        self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
+        self.spec.mpicxx = join_path(self.prefix.bin, 'mpic++')
+        self.spec.mpifc = join_path(self.prefix.bin, 'mpif90')
         self.spec.mpif77 = join_path(self.prefix.bin, 'mpif77')
+        self.spec.mpicc_shared_libs = [
+            join_path(self.prefix.lib, 'libmpi.{0}'.format(dso_suffix))
+        ]
         self.spec.mpicxx_shared_libs = [
             join_path(self.prefix.lib, 'libmpicxx.{0}'.format(dso_suffix)),
             join_path(self.prefix.lib, 'libmpi.{0}'.format(dso_suffix))

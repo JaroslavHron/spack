@@ -91,10 +91,15 @@ class Openmpi(AutotoolsPackage):
     url = "https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.0.tar.bz2"
     list_url = "http://www.open-mpi.org/software/ompi/"
 
+    version('3.1.0', '0895e268ca27735d7654bf64cee6c256')
+    version('3.0.2', '098fa89646f5b4438d9d8534bc960cd6')
+    version('3.0.1', '565f5060e080b0871a64b295c3d4426a')
+    
     # Current
     version('3.0.0', '757d51719efec08f9f1a7f32d58b3305')  # libmpi.so.40.00.0
 
     # Still supported
+    version('2.1.3', '46079b6f898a412240a0bf523e6cd24b')
     version('2.1.2', 'ff2e55cc529802e7b0738cf87acd3ee4')  # libmpi.so.20.10.2
     version('2.1.1', 'ae542f5cf013943ffbbeb93df883731b')  # libmpi.so.20.10.1
     version('2.1.0', '4838a5973115c44e14442c01d3f21d52')  # libmpi.so.20.10.0
@@ -190,7 +195,7 @@ class Openmpi(AutotoolsPackage):
         'fabrics',
         default=None if _verbs_dir() is None else 'verbs',
         description='List of fabrics that are enabled',
-        values=('psm', 'psm2', 'pmi', 'verbs', 'mxm'),
+        values=('psm', 'psm2', 'pmi', 'pmix', 'verbs', 'mxm'),
         multi=True
     )
 
@@ -201,6 +206,8 @@ class Openmpi(AutotoolsPackage):
         multi=True
     )
 
+
+    
     # Additional support options
     variant('java', default=False, description='Build Java support')
     variant('sqlite3', default=False, description='Build SQLite3 support')
@@ -208,8 +215,10 @@ class Openmpi(AutotoolsPackage):
     variant('thread_multiple', default=False,
             description='Enable MPI_THREAD_MULTIPLE support')
     variant('cuda', default=False, description='Enable CUDA support')
+    variant('xpmem', default=False, description='Enable XPMEM support')
     variant('ucx', default=False, description='Enable UCX support')
-
+    variant('orangefs', default=False, description='Enable Orangefs (pvfs2) support')
+    
     provides('mpi')
     provides('mpi@:2.2', when='@1.6.5')
     provides('mpi@:3.0', when='@1.7.5:')
@@ -220,10 +229,16 @@ class Openmpi(AutotoolsPackage):
     depends_on('java', when='+java')
     depends_on('sqlite', when='+sqlite3@:1.11')
     depends_on('ucx', when='+ucx')
-
+    depends_on('slurm', when='schedulers=slurm')
+    depends_on('slurm', when='fabrics=pmi')
+    depends_on('pmix', when='fabrics=pmix')
+    depends_on('libevent', when='fabrics=pmix')
+    depends_on('orangefs', when='+orangefs')
+    
     conflicts('+cuda', when='@:1.6')  # CUDA support was added in 1.7
     conflicts('fabrics=psm2', when='@:1.8')  # PSM2 support was added in 1.10.0
     conflicts('fabrics=pmi', when='@:1.5.4')  # PMI support was added in 1.5.5
+    conflicts('fabrics=pmix', when='@:2.0.0')  # PMIX support was added in 1.5.5
     conflicts('fabrics=mxm', when='@:1.5.3')  # MXM support was added in 1.5.4
 
     filter_compiler_wrappers('openmpi/*-wrapper-data*', relative_root='share')
@@ -300,10 +315,7 @@ class Openmpi(AutotoolsPackage):
         # If the option has not been activated return --without-slurm
         if not activated:
             return '--without-{0}'.format(opt)
-        line = '--with-{0}'.format(opt)
-        path = _slurm_dir()
-        if (path is not None):
-            line += '={0}'.format(path)
+        line = '--with-{0}={1}'.format(opt,self.spec['slurm'].prefix)
         return line
 
     def with_or_without_pmi(self, activated):
@@ -311,10 +323,15 @@ class Openmpi(AutotoolsPackage):
         # If the option has not been activated return --without-pmi
         if not activated:
             return '--without-{0}'.format(opt)
-        line = '--with-{0}'.format(opt)
-        path = _slurm_dir()
-        if (path is not None):
-            line += '={0}'.format(path)
+        line = '--with-{0}={1}'.format(opt,self.spec['slurm'].prefix)
+        return line
+
+    def with_or_without_pmix(self, activated):
+        opt = 'pmix'
+        # If the option has not been activated return --without-pmi
+        if not activated:
+            return '' #'--without-{0}'.format(opt)
+        line = '--with-{0}={1}'.format(opt,self.spec['pmix'].prefix)
         return line
 
     @run_before('autoreconf')
@@ -330,9 +347,13 @@ class Openmpi(AutotoolsPackage):
     def configure_args(self):
         spec = self.spec
         config_args = [
-            '--enable-shared',
-            '--enable-static'
-        ]
+            #'--enable-shared',
+            #'--enable-static',
+            '--with-cma',
+            #'--enable-builtin-atomics',
+            '--without-tm'
+            ]     
+
         if self.spec.satisfies('@2.0:'):
             # for Open-MPI 2.0:, C++ bindings are disabled by default.
             config_args.extend(['--enable-mpi-cxx'])
@@ -340,6 +361,10 @@ class Openmpi(AutotoolsPackage):
         # Fabrics and schedulers
         config_args.extend(self.with_or_without('fabrics'))
         config_args.extend(self.with_or_without('schedulers'))
+
+        if 'fabrics=pmix' in spec:
+            config_args.append('--with-libevent={0}'.format(spec['libevent'].prefix))
+
 
         # Hwloc support
         if spec.satisfies('@1.5.2:'):
@@ -372,7 +397,7 @@ class Openmpi(AutotoolsPackage):
                 config_args.append('--enable-contrib-no-build=vt')
 
         # Multithreading support
-        if spec.satisfies('@1.5.4:'):
+        if spec.satisfies('@1.5.4:2.999'):
             if '+thread_multiple' in spec:
                 config_args.append('--enable-mpi-thread-multiple')
             else:
@@ -411,4 +436,13 @@ class Openmpi(AutotoolsPackage):
         else:
             config_args.append('--without-ucx')
 
+        if '+xpmem' in spec:
+            config_args.append('--with-xpmem')
+        else:
+            config_args.append('--without-xpmem')
+
+        if '+orangefs' in spec :
+            config_args.append('--with-pvfs2={0}'.format(spec['orangefs'].prefix))
+            config_args.append('--with-io-romio-flags=--with-file-system=pvfs2+ufs+nfs --with-pvfs2={0}'.format(spec['orangefs'].prefix))
+            
         return config_args

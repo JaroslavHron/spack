@@ -31,9 +31,13 @@ class PySlepc4py(PythonPackage):
     homepage = "https://pypi.python.org/pypi/slepc4py"
     url      = "https://pypi.io/packages/source/s/slepc4py/slepc4py-3.7.0.tar.gz"
 
+    version('3.9.0', '09bdb08581a80fd1eea958616bb3993a')
     version('3.8.0', 'c0657f2197237890c62ba8c30829c63a')
     version('3.7.0', 'c4775e88b0825c7313629c01de60ecb2')
 
     depends_on('py-setuptools', type='build')
     depends_on('py-petsc4py', type=('build', 'run'))
     depends_on('slepc')
+    depends_on('slepc@3.9:3.9.99', when='@3.9:3.9.99')
+    depends_on('slepc@3.8:3.8.99', when='@3.8:3.8.99')
+        

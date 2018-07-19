@@ -23,5 +23,5 @@ For more information, visit http://www.fenicsproject.org.
     depends_on('py-setuptools', type="build")
     depends_on('py-numpy', type=("build","run"))
     depends_on('cmake', type="run")
-    depends_on('py-flufl_lock', type="run")
+    #depends_on('py-flufl_lock', type="run")
     depends_on('swig', type=("build","run"))

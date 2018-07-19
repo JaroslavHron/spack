@@ -16,6 +16,9 @@ class Petsc(Package):
     version('develop', git='https://bitbucket.org/petsc/petsc.git', tag='master')
     version('xsdk-0.2.0', git='https://bitbucket.org/petsc/petsc.git', tag='xsdk-0.2.0')
 
+    version('3.9.2', '8bedc0cd8c8603d54bfd99a6e8f77b3d')    
+    version('3.9.0', '34b8a81814ca050a96d58e53a2f0ac7a')
+    version('3.8.4', 'd7767fe2919536aa393eb22841899306')
     version('3.8.3', '322cbcf2a0f7b7bad562643b05d66f11')
     version('3.8.2', '00666e1c4cbfa8dd6eebf91ff8180f79')
     version('3.8.1', '3ed75c1147800fc156fe1f1e515a68a7')
@@ -41,7 +44,7 @@ class Petsc(Package):
     variant('int64', default=False, description='Compile with 64bit indices')
     variant('clanguage', default='C', values=('C', 'C++'), description='Specify C (recommended) or C++ to compile PETSc', multi=False)
 
-    download_libs=['superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch']
+    download_libs=['superlu', 'superlu_dist', 'hypre', 'scalapack', 'blacs', 'mumps', 'ml', 'suitesparse', 'pord', 'scotch', 'ptscotch', 'triangle']
 
     for lib in download_libs:
         variant(lib, default=True, description="Compile with internal {0} library".format(lib))
@@ -63,6 +66,7 @@ class Petsc(Package):
     # Build dependencies
     # wait for fix for build dependeces in spack
     #depends_on('python@2.6:2.8', type='build')
+    #depends_on('python', type='build')
 
     # Other dependencies
     depends_on('boost', when='+boost')
@@ -168,8 +172,9 @@ class Petsc(Package):
             if "+{0}".format(lib) in spec:
                 options.append('--download-{library}=yes'.format(library=lib))
                                             
-        configure('--prefix=%s' % prefix, *options)
-
+        #configure('--prefix=%s' % prefix, *options)
+        Executable('/usr/bin/python')('./config/configure.py', '--prefix=%s' % prefix, *options)
+        
         # PETSc has its own way of doing parallel make.
         make('MAKE_NP=%s' % make_jobs, parallel=False)
         make("install")
@@ -208,12 +213,14 @@ class Petsc(Package):
         # configure fails if these env vars are set outside of Spack
         spack_env.unset('PETSC_DIR')
         spack_env.unset('PETSC_ARCH')
+        spack_env.unset('PYTHONPATH')
+        spack_env.unset('PYTHONHOME')
 
         # Set PETSC_DIR in the module file
         run_env.set('PETSC_DIR', self.prefix)
-        run_env.unset('PETSC_ARCH')
+        #run_env.unset('PETSC_ARCH')
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         # Set up PETSC_DIR for everyone using PETSc package
         spack_env.set('PETSC_DIR', self.prefix)
-        spack_env.unset('PETSC_ARCH')
+        #spack_env.unset('PETSC_ARCH')

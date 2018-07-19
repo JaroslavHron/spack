@@ -572,10 +572,10 @@ class Trilinos(CMakePackage):
             if spec.satisfies('%gcc') or spec.satisfies('%clang'):
                 libgfortran = os.path.dirname(os.popen(
                     '%s --print-file-name libgfortran.a' %
-                    join_path(mpi_bin, 'mpif90')).read())
+                    spec['mpi'].mpifc).read())
                 options.extend([
-                    '-DTrilinos_EXTRA_LINK_FLAGS:STRING=-L%s/ -lgfortran' % (
-                        libgfortran),
+                    '-DTrilinos_EXTRA_LINK_FLAGS:STRING=-L%s -L%s' % (libgfortran, spec['slurm'].prefix.lib),
+                    #'-DTrilinos_EXTRA_LINK_FLAGS:STRING=-lgfortran',
                     '-DTrilinos_ENABLE_Fortran=ON'
                 ])
 

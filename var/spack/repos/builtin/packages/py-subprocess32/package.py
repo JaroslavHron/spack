@@ -32,3 +32,5 @@ class PySubprocess32(PythonPackage):
     url      = "https://pypi.io/packages/source/s/subprocess32/subprocess32-3.2.7.tar.gz"
 
     version('3.2.7', '824c801e479d3e916879aae3e9c15e16')
+
+    #depends_on("python@:2.8")

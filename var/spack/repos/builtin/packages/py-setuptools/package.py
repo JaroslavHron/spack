@@ -57,3 +57,4 @@ class PySetuptools(PythonPackage):
     depends_on('py-packaging@16.8:', when='@34.0.0:', type=('build', 'run'))
     depends_on('py-six@1.6.0:',      when='@34.0.0:', type=('build', 'run'))
     depends_on('py-appdirs@1.4.0:',  when='@34.0.0:', type=('build', 'run'))
+    depends_on('py-cython', type=('build', 'run'))

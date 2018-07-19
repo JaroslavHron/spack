@@ -32,6 +32,8 @@ class PyPetsc4py(PythonPackage):
     homepage = "https://pypi.python.org/pypi/petsc4py"
     url      = "https://pypi.io/packages/source/p/petsc4py/petsc4py-3.8.1.tar.gz"
 
+    version('3.9.1', '85f79a0bd3f93644419e10f79fa86a8a')    
+    version('3.9.0', '160ccacf1c09334a610f354694c799bb')
     version('3.8.1', '5157220c2b81765c581d2b17c03259f8')
     version('3.8.0', '02029be4bdec904854f0e0692005fb06')
     version('3.7.0', '816a20040a6a477bd637f397c9fb5b6d')
@@ -40,4 +42,8 @@ class PyPetsc4py(PythonPackage):
     depends_on('py-setuptools', type='build')
     depends_on('py-numpy', type=('build', 'run'))
     depends_on('py-mpi4py', type=('build', 'run'))
-    depends_on('petsc+mpi')
+    depends_on('petsc@3.9:3.9.99+mpi', when='@3.9:3.9.99')
+    depends_on('petsc@3.8:3.8.99+mpi', when='@3.8:3.8.99')
+
+
+    

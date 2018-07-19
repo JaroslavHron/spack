@@ -28,8 +28,9 @@ from spack import *
 class PyCython(PythonPackage):
     """The Cython compiler for writing C extensions for the Python language."""
     homepage = "https://pypi.python.org/pypi/cython"
-    url      = "https://pypi.io/packages/source/c/cython/Cython-0.25.2.tar.gz"
+    url      = "https://github.com/cython/cython/archive/0.28.1.tar.gz"
 
+    version('0.28.1', '6fe0586c508e6acde5e26cd289359273')
     version('0.25.2', '642c81285e1bb833b14ab3f439964086')
 
     version('0.23.5', '66b62989a67c55af016c916da36e7514')

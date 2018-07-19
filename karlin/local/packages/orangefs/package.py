@@ -25,13 +25,14 @@
 from spack import *
 
 
-class PyFunctools32(PythonPackage):
-    """Backport of the functools module from Python 3.2.3 for use on 2.7 and
-    PyPy."""
+class Orangefs(Package):
+    """The OrangeFS Project - formely PVFS2 - parallel filesystem"""
 
-    homepage = "https://github.com/MiCHiLU/python-functools32"
-    url      = "https://pypi.io/packages/source/f/functools32/functools32-3.2.3-2.tar.gz"
+    homepage = "http://www.orangefs.org/"
+    url      = "https://s3.amazonaws.com/download.orangefs.org/current/source/orangefs-2.9.7.tar.gz"
 
-    version('3.2.3-2', '09f24ffd9af9f6cd0f63cb9f4e23d4b2')
+    version('2.9.7', 'b9c41ab5c2e17c25b409600b3bd37e59')
 
-    #depends_on("python@:2.8")
+    def install(self, spec, prefix):
+        make()
+        make('install')

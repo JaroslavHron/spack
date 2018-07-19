@@ -25,7 +25,7 @@
 from spack import *
 
 
-class Globalarrays(CMakePackage):
+class Globalarrays(AutotoolsPackage):
     """The Global Arrays (GA) toolkit provides a shared memory style
     programming environment in the context of distributed array data
     structures.
@@ -41,26 +41,28 @@ class Globalarrays(CMakePackage):
     depends_on('blas')
     depends_on('lapack')
     depends_on('mpi')
+    depends_on('scalapack')
 
     patch('ibm-xl.patch', when='%xl')
     patch('ibm-xl.patch', when='%xl_r')
 
-    def cmake_args(self):
+
+    depends_on('autoconf', type='build')
+    depends_on('automake', type='build')
+    depends_on('libtool', type='build')
+    depends_on('m4', type='build')
+    depends_on('perl', type='build')
+
+    #force_autoreconf = True
+
+    def configure_args(self):
         options = []
 
         options.extend([
-            '-DENABLE_FORTRAN=ON',
-            '-DENABLE_BLAS=ON',
+            '--with-openib',
+            '--with-pic',
+            '--with-blas={0}'.format(self.spec['blas'].prefix),
+            '--with-lapack={0}'.format(self.spec['lapack'].prefix)
         ])
-
-        if self.compiler.name == 'xl' or self.compiler.name == 'xl_r':
-            # use F77 compiler if IBM XL
-            options.extend([
-                '-DCMAKE_Fortran_COMPILER=%s' % self.compiler.f77,
-                '-DCMAKE_Fortran_FLAGS=-qzerosize'
-            ])
-
-        if "+i8" in self.spec:
-            options.extend(['-DENABLE_I8=ON'])
 
         return options

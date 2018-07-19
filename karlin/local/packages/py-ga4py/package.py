@@ -24,14 +24,19 @@
 ##############################################################################
 from spack import *
 
+class PyGa4py(PythonPackage):
+    """Global Arrays Python bindings and distributed NumPy module GAiN."""
 
-class PyFunctools32(PythonPackage):
-    """Backport of the functools module from Python 3.2.3 for use on 2.7 and
-    PyPy."""
+    # FIXME: Add a proper url for your package's homepage here.
+    homepage = "https://github.com/GlobalArrays/ga4py"
+    url      = "https://github.com/GlobalArrays/ga4py.git"
 
-    homepage = "https://github.com/MiCHiLU/python-functools32"
-    url      = "https://pypi.io/packages/source/f/functools32/functools32-3.2.3-2.tar.gz"
+    version('develop',git='https://github.com/GlobalArrays/ga4py.git', branch='master')
+    version('develop-py3',git='https://github.com/GlobalArrays/ga4py.git', branch='feature/py3')
 
-    version('3.2.3-2', '09f24ffd9af9f6cd0f63cb9f4e23d4b2')
-
-    #depends_on("python@:2.8")
+    #depends_on('py-setuptools', type='build')
+    depends_on('globalarrays')
+    depends_on('py-numpy', type=('build', 'run'))
+    depends_on('py-mpi4py', type=('build', 'run'))
+    depends_on('py-cython', type='build')
+    
