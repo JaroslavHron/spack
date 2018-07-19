@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -54,18 +54,15 @@ import re
 from six import string_types
 
 import llnl.util.lang
-from llnl.util.filesystem import join_path
 
-import spack
 import spack.error
 import spack.spec
 import spack.url
+import spack.variant
 from spack.dependency import Dependency, default_deptype, canonical_deptype
 from spack.fetch_strategy import from_kwargs
 from spack.patch import Patch
 from spack.resource import Resource
-from spack.spec import Spec, parse_anonymous_spec
-from spack.variant import Variant
 from spack.version import Version
 
 __all__ = []
@@ -83,7 +80,7 @@ class DirectiveMeta(type):
     _directive_names = set()
     _directives_to_be_executed = []
 
-    def __new__(mcs, name, bases, attr_dict):
+    def __new__(cls, name, bases, attr_dict):
         # Initialize the attribute containing the list of directives
         # to be executed. Here we go reversed because we want to execute
         # commands:
@@ -112,8 +109,8 @@ class DirectiveMeta(type):
                 DirectiveMeta._directives_to_be_executed)
             DirectiveMeta._directives_to_be_executed = []
 
-        return super(DirectiveMeta, mcs).__new__(
-            mcs, name, bases, attr_dict)
+        return super(DirectiveMeta, cls).__new__(
+            cls, name, bases, attr_dict)
 
     def __init__(cls, name, bases, attr_dict):
         # The class is being created: if it is a package we must ensure
@@ -266,9 +263,9 @@ def _depends_on(pkg, spec, when=None, type=default_deptype, patches=None):
     # If when is None or True make sure the condition is always satisfied
     if when is None or when is True:
         when = pkg.name
-    when_spec = parse_anonymous_spec(when, pkg.name)
+    when_spec = spack.spec.parse_anonymous_spec(when, pkg.name)
 
-    dep_spec = Spec(spec)
+    dep_spec = spack.spec.Spec(spec)
     if pkg.name == dep_spec.name:
         raise CircularReferenceError(
             "Package '%s' cannot depend on itself." % pkg.name)
@@ -329,7 +326,7 @@ def conflicts(conflict_spec, when=None, msg=None):
     def _execute_conflicts(pkg):
         # If when is not specified the conflict always holds
         condition = pkg.name if when is None else when
-        when_spec = parse_anonymous_spec(condition, pkg.name)
+        when_spec = spack.spec.parse_anonymous_spec(condition, pkg.name)
 
         # Save in a list the conflicts and the associated custom messages
         when_spec_list = pkg.conflicts.setdefault(conflict_spec, [])
@@ -381,9 +378,9 @@ def extends(spec, **kwargs):
         #     msg = 'Packages can extend at most one other package.'
         #     raise DirectiveError(directive, msg)
 
-        when = kwargs.pop('when', pkg.name)
+        when = kwargs.get('when', pkg.name)
         _depends_on(pkg, spec, when=when)
-        pkg.extendees[spec] = (Spec(spec), kwargs)
+        pkg.extendees[spec] = (spack.spec.Spec(spec), kwargs)
     return _execute_extends
 
 
@@ -395,7 +392,7 @@ def provides(*specs, **kwargs):
     """
     def _execute_provides(pkg):
         spec_string = kwargs.get('when', pkg.name)
-        provider_spec = parse_anonymous_spec(spec_string, pkg.name)
+        provider_spec = spack.spec.parse_anonymous_spec(spec_string, pkg.name)
 
         for string in specs:
             for provided_spec in spack.spec.parse(string):
@@ -432,7 +429,8 @@ def patch(url_or_filename, level=1, when=None, working_dir=".", **kwargs):
     """
     def _execute_patch(pkg_or_dep):
         constraint = pkg_or_dep.name if when is None else when
-        when_spec = parse_anonymous_spec(constraint, pkg_or_dep.name)
+        when_spec = spack.spec.parse_anonymous_spec(
+            constraint, pkg_or_dep.name)
 
         # if this spec is identical to some other, then append this
         # patch to the existing list.
@@ -492,7 +490,7 @@ def variant(
             msg = "Invalid variant name in {0}: '{1}'"
             raise DirectiveError(directive, msg.format(pkg.name, name))
 
-        pkg.variants[name] = Variant(
+        pkg.variants[name] = spack.variant.Variant(
             name, default, description, values, multi, validator
         )
     return _execute_variant
@@ -530,7 +528,7 @@ def resource(**kwargs):
         # Check if the path falls within the main package stage area
         test_path = 'stage_folder_root'
         normalized_destination = os.path.normpath(
-            join_path(test_path, destination)
+            os.path.join(test_path, destination)
         )  # Normalized absolute path
 
         if test_path not in normalized_destination:
@@ -539,7 +537,7 @@ def resource(**kwargs):
             message += "\tdestination : '{dest}'\n".format(dest=destination)
             raise RuntimeError(message)
 
-        when_spec = parse_anonymous_spec(when, pkg.name)
+        when_spec = spack.spec.parse_anonymous_spec(when, pkg.name)
         resources = pkg.resources.setdefault(when_spec, [])
         name = kwargs.get('name')
         fetcher = from_kwargs(**kwargs)

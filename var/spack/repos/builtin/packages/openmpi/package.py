@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -24,6 +24,7 @@
 ##############################################################################
 
 import os
+import sys
 
 from spack import *
 
@@ -62,44 +63,33 @@ def _mxm_dir():
     else:
         return None
 
-def _slurm_dir():
-    try:
-        # Try to locate slurm by looking for a utility in the path
-        sinfo = which("sinfo")
-        # Run it (silently) to ensure it works
-        sinfo(output=str, error=str)
-        # Get path to executable
-        path = sinfo.exe[0]
-        # Remove executable name and "bin" directory
-        return ancestor(path, n=2)
-    except:
-        return None
-
 
 class Openmpi(AutotoolsPackage):
-    """The Open MPI Project is an open source Message Passing Interface
-       implementation that is developed and maintained by a consortium
-       of academic, research, and industry partners. Open MPI is
-       therefore able to combine the expertise, technologies, and
-       resources from all across the High Performance Computing
-       community in order to build the best MPI library available.
-       Open MPI offers advantages for system and software vendors,
-       application developers and computer science researchers.
+    """An open source Message Passing Interface implementation.
+
+    The Open MPI Project is an open source Message Passing Interface
+    implementation that is developed and maintained by a consortium
+    of academic, research, and industry partners. Open MPI is
+    therefore able to combine the expertise, technologies, and
+    resources from all across the High Performance Computing
+    community in order to build the best MPI library available.
+    Open MPI offers advantages for system and software vendors,
+    application developers and computer science researchers.
     """
 
     homepage = "http://www.open-mpi.org"
     url = "https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.0.tar.bz2"
     list_url = "http://www.open-mpi.org/software/ompi/"
 
-    version('3.1.0', '0895e268ca27735d7654bf64cee6c256')
-    version('3.0.2', '098fa89646f5b4438d9d8534bc960cd6')
-    version('3.0.1', '565f5060e080b0871a64b295c3d4426a')
-    
     # Current
-    version('3.0.0', '757d51719efec08f9f1a7f32d58b3305')  # libmpi.so.40.00.0
+    version('3.1.1', '493f1db2f75afaab1c8ecba78d2f5aab')  # libmpi.so.40.10.1
+    version('3.1.0', '0895e268ca27735d7654bf64cee6c256')  # libmpi.so.40.10.0
 
     # Still supported
-    version('2.1.3', '46079b6f898a412240a0bf523e6cd24b')
+    version('3.0.2', '098fa89646f5b4438d9d8534bc960cd6')  # libmpi.so.40.00.2
+    version('3.0.1', '565f5060e080b0871a64b295c3d4426a')  # libmpi.so.40.00.1    
+    version('3.0.0', '757d51719efec08f9f1a7f32d58b3305')  # libmpi.so.40.00.0
+    version('2.1.3', '46079b6f898a412240a0bf523e6cd24b')  # libmpi.so.20.10.2
     version('2.1.2', 'ff2e55cc529802e7b0738cf87acd3ee4')  # libmpi.so.20.10.2
     version('2.1.1', 'ae542f5cf013943ffbbeb93df883731b')  # libmpi.so.20.10.1
     version('2.1.0', '4838a5973115c44e14442c01d3f21d52')  # libmpi.so.20.10.0
@@ -191,11 +181,13 @@ class Openmpi(AutotoolsPackage):
     patch('configure.patch', when="@1.10.1")
     patch('fix_multidef_pmi_class.patch', when="@2.0.0:2.0.1")
 
+    fabrics = ('psm', 'psm2', 'verbs', 'mxm', 'ucx', 'libfabric')
+
     variant(
         'fabrics',
         default=None if _verbs_dir() is None else 'verbs',
-        description='List of fabrics that are enabled',
-        values=('psm', 'psm2', 'pmi', 'pmix', 'verbs', 'mxm'),
+        description="List of fabrics that are enabled",
+        values=fabrics,
         multi=True
     )
 
@@ -206,8 +198,6 @@ class Openmpi(AutotoolsPackage):
         multi=True
     )
 
-
-    
     # Additional support options
     variant('java', default=False, description='Build Java support')
     variant('sqlite3', default=False, description='Build SQLite3 support')
@@ -215,37 +205,64 @@ class Openmpi(AutotoolsPackage):
     variant('thread_multiple', default=False,
             description='Enable MPI_THREAD_MULTIPLE support')
     variant('cuda', default=False, description='Enable CUDA support')
-    variant('xpmem', default=False, description='Enable XPMEM support')
-    variant('ucx', default=False, description='Enable UCX support')
-    variant('orangefs', default=False, description='Enable Orangefs (pvfs2) support')
-    
+    variant('pmi', default=False, description='Enable PMI support')
+    variant('cxx_exceptions', default=True, description='Enable C++ Exception support')
+    # Adding support to build a debug version of OpenMPI that activates
+    # Memchecker, as described here:
+    #
+    # https://www.open-mpi.org/faq/?category=debugging#memchecker_what
+    #
+    # This option degrades run-time support, and thus is disabled by default
+    variant(
+        'memchecker',
+        default=False,
+        description='Memchecker support for debugging [degrades performance]'
+    )
+
     provides('mpi')
     provides('mpi@:2.2', when='@1.6.5')
     provides('mpi@:3.0', when='@1.7.5:')
     provides('mpi@:3.1', when='@2.0.0:')
 
+    if sys.platform != 'darwin':
+        depends_on('numactl')
+
     depends_on('hwloc')
+    # ompi@:3.0.0 doesn't support newer hwloc releases:
+    # "configure: error: OMPI does not currently support hwloc v2 API"
+    # Future ompi releases may support it, needs to be verified.
+    # See #7483 for context.
+    depends_on('hwloc@:1.999')
+
     depends_on('hwloc +cuda', when='+cuda')
     depends_on('java', when='+java')
     depends_on('sqlite', when='+sqlite3@:1.11')
-    depends_on('ucx', when='+ucx')
-    depends_on('slurm', when='schedulers=slurm')
-    depends_on('slurm', when='fabrics=pmi')
-    depends_on('pmix', when='fabrics=pmix')
-    depends_on('libevent', when='fabrics=pmix')
-    depends_on('orangefs', when='+orangefs')
-    
+    depends_on('zlib', when='@3.0.0:')
+    depends_on('valgrind~mpi', when='+memchecker')
+    depends_on('ucx', when='fabrics=ucx')
+    depends_on('libfabric', when='fabrics=libfabric')
+
     conflicts('+cuda', when='@:1.6')  # CUDA support was added in 1.7
     conflicts('fabrics=psm2', when='@:1.8')  # PSM2 support was added in 1.10.0
-    conflicts('fabrics=pmi', when='@:1.5.4')  # PMI support was added in 1.5.5
-    conflicts('fabrics=pmix', when='@:2.0.0')  # PMIX support was added in 1.5.5
     conflicts('fabrics=mxm', when='@:1.5.3')  # MXM support was added in 1.5.4
+    conflicts('+pmi', when='@:1.5.4')  # PMI support was added in 1.5.5
+    conflicts('schedulers=slurm ~pmi', when='@1.5.4:',
+              msg='+pmi is required for openmpi(>=1.5.5) to work with SLURM.')
 
     filter_compiler_wrappers('openmpi/*-wrapper-data*', relative_root='share')
+    conflicts('fabrics=libfabric', when='@:1.8')  # libfabric support was added in 1.10.0
+    # It may be worth considering making libfabric an exclusive fabrics choice
 
     def url_for_version(self, version):
         url = "http://www.open-mpi.org/software/ompi/v{0}/downloads/openmpi-{1}.tar.bz2"
         return url.format(version.up_to(2), version)
+
+    @property
+    def headers(self):
+        hdrs = HeaderList(find(self.prefix.include, 'mpi.h', recursive=False))
+        if not hdrs:
+            hdrs = HeaderList(find(self.prefix, 'mpi.h', recursive=True))
+        return hdrs or None
 
     @property
     def libs(self):
@@ -263,14 +280,12 @@ class Openmpi(AutotoolsPackage):
         spack_env.set('MPICC',  join_path(self.prefix.bin, 'mpicc'))
         spack_env.set('MPICXX', join_path(self.prefix.bin, 'mpic++'))
         spack_env.set('MPIF77', join_path(self.prefix.bin, 'mpif77'))
-        spack_env.set('MPIFC', join_path(self.prefix.bin, 'mpifort'))
         spack_env.set('MPIF90', join_path(self.prefix.bin, 'mpif90'))
 
         spack_env.set('OMPI_CC', spack_cc)
         spack_env.set('OMPI_CXX', spack_cxx)
         spack_env.set('OMPI_FC', spack_fc)
         spack_env.set('OMPI_F77', spack_f77)
-        spack_env.set('OMPI_F90', spack_fc)
 
     def setup_dependent_package(self, module, dependent_spec):
         self.spec.mpicc = join_path(self.prefix.bin, 'mpicc')
@@ -310,30 +325,6 @@ class Openmpi(AutotoolsPackage):
             line += '={0}'.format(path)
         return line
 
-    def with_or_without_slurm(self, activated):
-        opt = 'slurm'
-        # If the option has not been activated return --without-slurm
-        if not activated:
-            return '--without-{0}'.format(opt)
-        line = '--with-{0}={1}'.format(opt,self.spec['slurm'].prefix)
-        return line
-
-    def with_or_without_pmi(self, activated):
-        opt = 'pmi'
-        # If the option has not been activated return --without-pmi
-        if not activated:
-            return '--without-{0}'.format(opt)
-        line = '--with-{0}={1}'.format(opt,self.spec['slurm'].prefix)
-        return line
-
-    def with_or_without_pmix(self, activated):
-        opt = 'pmix'
-        # If the option has not been activated return --without-pmi
-        if not activated:
-            return '' #'--without-{0}'.format(opt)
-        line = '--with-{0}={1}'.format(opt,self.spec['pmix'].prefix)
-        return line
-
     @run_before('autoreconf')
     def die_without_fortran(self):
         # Until we can pass variants such as +fortran through virtual
@@ -347,24 +338,37 @@ class Openmpi(AutotoolsPackage):
     def configure_args(self):
         spec = self.spec
         config_args = [
-            #'--enable-shared',
-            #'--enable-static',
-            '--with-cma',
-            #'--enable-builtin-atomics',
-            '--without-tm'
-            ]     
+            '--enable-shared',
+        ]
 
-        if self.spec.satisfies('@2.0:'):
+        # According to this comment on github:
+        #
+        # https://github.com/open-mpi/ompi/issues/4338#issuecomment-383982008
+        #
+        # adding --enable-static silently disables slurm support via pmi/pmi2
+        if not spec.satisfies('schedulers=slurm'):
+            config_args.append('--enable-static')
+
+        if spec.satisfies('@2.0:'):
             # for Open-MPI 2.0:, C++ bindings are disabled by default.
             config_args.extend(['--enable-mpi-cxx'])
 
-        # Fabrics and schedulers
+        if spec.satisfies('@3.0.0:', strict=True):
+            config_args.append('--with-zlib={0}'.format(spec['zlib'].prefix))
+
+        # Fabrics
         config_args.extend(self.with_or_without('fabrics'))
+        # Schedulers
         config_args.extend(self.with_or_without('schedulers'))
+        # PMI
+        config_args.extend(self.with_or_without('pmi'))
 
-        if 'fabrics=pmix' in spec:
-            config_args.append('--with-libevent={0}'.format(spec['libevent'].prefix))
-
+        config_args.extend(self.enable_or_disable('memchecker'))
+        if spec.satisfies('+memchecker', strict=True):
+            config_args.extend([
+                '--enable-debug',
+                '--with-valgrind={0}'.format(spec['valgrind'].prefix),
+            ])
 
         # Hwloc support
         if spec.satisfies('@1.5.2:'):
@@ -430,19 +434,23 @@ class Openmpi(AutotoolsPackage):
             else:
                 config_args.append('--without-cuda')
 
-        # UCX support
-        if '+ucx' in spec:
-            config_args.append('--with-ucx={0}'.format(spec['ucx'].prefix))
+        if '+cxx_exceptions' in spec:
+            config_args.append('--enable-cxx-exceptions')
         else:
-            config_args.append('--without-ucx')
-
-        if '+xpmem' in spec:
-            config_args.append('--with-xpmem')
-        else:
-            config_args.append('--without-xpmem')
-
-        if '+orangefs' in spec :
-            config_args.append('--with-pvfs2={0}'.format(spec['orangefs'].prefix))
-            config_args.append('--with-io-romio-flags=--with-file-system=pvfs2+ufs+nfs --with-pvfs2={0}'.format(spec['orangefs'].prefix))
-            
+            config_args.append('--disable-cxx-exceptions')
         return config_args
+
+    @run_after('install')
+    def delete_mpirun_mpiexec(self):
+        # The preferred way to run an application when Slurm is the
+        # scheduler is to let Slurm manage process spawning via PMI.
+        #
+        # Deleting the links to orterun avoids users running their
+        # applications via mpirun or mpiexec, and leaves srun as the
+        # only sensible choice (orterun is still present, but normal
+        # users don't know about that).
+        if '@1.6: schedulers=slurm' in self.spec:
+            os.remove(self.prefix.bin.mpirun)
+            os.remove(self.prefix.bin.mpiexec)
+            os.remove(self.prefix.bin.shmemrun)
+            os.remove(self.prefix.bin.oshrun)

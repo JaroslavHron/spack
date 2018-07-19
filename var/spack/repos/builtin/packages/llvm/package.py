@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -89,6 +89,7 @@ class Llvm(CMakePackage):
     depends_on('ncurses', when='+lldb')
     depends_on('swig', when='+lldb')
     depends_on('libedit', when='+lldb')
+    depends_on('py-six', when='@5.0.0: +lldb +python')
 
     # gold support
     depends_on('binutils+gold', when='+gold')
@@ -177,6 +178,22 @@ class Llvm(CMakePackage):
                 'lldb': 'http://llvm.org/svn/llvm-project/lldb/trunk',
                 'lld': 'http://llvm.org/svn/llvm-project/lld/trunk',
                 'libunwind': 'http://llvm.org/svn/llvm-project/libunwind/trunk',
+            }
+        },
+        {
+            'version': '6.0.0',
+            'md5': '788a11a35fa62eb008019b37187d09d2',
+            'resources': {
+                'compiler-rt': 'ba6368e894b5528e527d86a69d8533c6',
+                'openmp': 'eb6b8d0318a950a8192933a3b500585d',
+                'polly': 'e5808a3a1ed1c23f56dd1854b86689d0',
+                'libcxx': '4ecad7dfd8ea636205d3ffef028df73a',
+                'libcxxabi': '9d06327892fc5d8acec4ef2e2821ab3d',
+                'cfe': '121b3896cb0c7765d690acc5d9495d24',
+                'clang-tools-extra': '6b1d543116dab5a3caba10091d983743',
+                'lldb': '1ec6498066e273b7261270f344b68121',
+                'lld': '7ab2612417477b03538f11cd8b5e12f8',
+                'libunwind': '022a4ee2c3bf7b6d151e0444f66aca64'
             }
         },
         {
@@ -398,6 +415,27 @@ class Llvm(CMakePackage):
     # Github issue #4986
     patch('llvm_gcc7.patch', when='@4.0.0:4.0.1+lldb %gcc@7.0:')
 
+    @run_before('cmake')
+    def check_darwin_lldb_codesign_requirement(self):
+        if not self.spec.satisfies('+lldb platform=darwin'):
+            return
+        codesign = which('codesign')
+        cp = which('cp')
+        mkdir('tmp')
+        llvm_check_file = join_path('tmp', 'llvm_check')
+        cp('/usr/bin/false', llvm_check_file)
+
+        try:
+            codesign('-f', '-s', 'lldb_codesign', '--dryrun',
+                     llvm_check_file)
+
+        except ProcessError:
+            explanation = ('The "lldb_codesign" identity must be available'
+                           ' to build LLVM with LLDB. See https://llvm.org/'
+                           'svn/llvm-project/lldb/trunk/docs/code-signing'
+                           '.txt for details on how to create this identity.')
+            raise RuntimeError(explanation)
+
     def setup_environment(self, spack_env, run_env):
         spack_env.append_flags('CXXFLAGS', self.compiler.cxx11_flag)
 
@@ -425,6 +463,8 @@ class Llvm(CMakePackage):
                                '-DLLVM_POLLY_BUILD:Bool=OFF',
                                '-DLLVM_POLLY_LINK_INTO_TOOLS:Bool=OFF'])
 
+        if '+python' in spec and '+lldb' in spec and spec.satisfies('@5.0.0:'):
+            cmake_args.append('-DLLDB_USE_SYSTEM_SIX:Bool=TRUE')
         if '+clang' not in spec:
             cmake_args.append('-DLLVM_EXTERNAL_CLANG_BUILD:Bool=OFF')
         if '+lldb' not in spec:

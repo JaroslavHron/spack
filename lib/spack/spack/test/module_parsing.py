@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -42,13 +42,13 @@ MODULE_NOT_DEFINED = b'not found' in typeset
 
 @pytest.fixture
 def save_env():
-    old_PATH = os.environ.get('PATH', None)
+    old_path = os.environ.get('PATH', None)
     old_bash_func = os.environ.get('BASH_FUNC_module()', None)
 
     yield
 
-    if old_PATH:
-        os.environ['PATH'] = old_PATH
+    if old_path:
+        os.environ['PATH'] = old_path
     if old_bash_func:
         os.environ['BASH_FUNC_module()'] = old_bash_func
 

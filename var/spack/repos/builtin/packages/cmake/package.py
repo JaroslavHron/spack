@@ -33,7 +33,13 @@ class Cmake(Package):
     list_url = 'https://cmake.org/files/'
     list_depth = 1
 
-    version('3.10.2', '732808e17fc14dc8cee50d51518c34eb')
+    version('3.12.0',   'ab4aa7df9301c94cdd6f8ee4fe66458b')
+    version('3.11.4',   '72e168b3bad2f9c34dcebbad7af56ff0')
+    version('3.11.3',   '3f923154ed47128f13b08eacd207d9ee')
+    version('3.11.2',   'd2d554c05fc07cfae7846d2aa205f12a')
+    version('3.11.1',   '12a3177477e4e2c7bc514193d421dafe')
+    version('3.11.0',   'f3ebc79b5dec85b49abe75958ffa1a03')
+    version('3.10.2',   '732808e17fc14dc8cee50d51518c34eb')
     version('3.10.1',   '9a726e5ec69618b172aa4b06d18c3998')
     version('3.10.0',   'f3f8e70ca3055f3cd288f89ff233057e')
     version('3.9.4',    '33769e001bdcd788f565bf378692e5ae')
@@ -43,7 +49,6 @@ class Cmake(Package):
     version('3.8.0',    'f28cba717ba38ad82a488daed8f45b5b')
     version('3.7.2',    '79bd7e65cd81ea3aa2619484ad6ff25a')
     version('3.7.1',    'd031d5a06e9f1c5367cdfc56fbd2a1c8')
-    version('3.6.3', 'b62fc10072cd906160865b9e74ce228f')
     version('3.6.1',    'd6dd661380adacdb12f41b926ec99545')
     version('3.6.0',    'aa40fbecf49d99c083415c2411d12db9')
     version('3.5.2',    '701386a1b5ec95f8d1075ecf96383e02')

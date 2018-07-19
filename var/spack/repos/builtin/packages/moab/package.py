@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -123,6 +123,8 @@ class Moab(AutotoolsPackage):
 #          FIXME: --without-mpi does not configure right
 #       else:
 #           options.append('--without-mpi')
+
+        options.append('--with-blas=%s' % spec['blas'].libs)
 
         if '+hdf5' in spec:
             options.append('--with-hdf5=%s' % spec['hdf5'].prefix)

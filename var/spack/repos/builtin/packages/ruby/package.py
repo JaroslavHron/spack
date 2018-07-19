@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -31,6 +31,8 @@ class Ruby(AutotoolsPackage):
 
     homepage = "https://www.ruby-lang.org/"
     url      = "http://cache.ruby-lang.org/pub/ruby/2.2/ruby-2.2.0.tar.gz"
+    list_url = "http://cache.ruby-lang.org/pub/ruby/"
+    list_depth = 1
 
     version('2.2.0', 'cd03b28fd0b555970f5c4fd481700852')
 
@@ -62,6 +64,10 @@ class Ruby(AutotoolsPackage):
         placement='rubygems-updated-ssl-cert',
         expand=False
     )
+
+    def url_for_version(self, version):
+        url = "http://cache.ruby-lang.org/pub/ruby/{0}/ruby-{1}.tar.gz"
+        return url.format(version.up_to(2), version)
 
     def configure_args(self):
         args = []

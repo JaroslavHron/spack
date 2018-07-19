@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2013-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Spack.
@@ -34,8 +34,8 @@ class Slepc(Package):
     homepage = "http://www.grycap.upv.es/slepc"
     url = "http://slepc.upv.es/download/distrib/slepc-3.6.2.tar.gz"
 
-    version('3.9.1', '7eae35e7bcfe5c5144677731089d3ee9')
-    version('3.8.3', '3446ebdf03bb0c850e6d1ad798a8d135')
+    version('3.9.1', 'e174ea7c127d9161eef976b0288f0c56d443a58d6ab2dc8af1e8bd66f156ce17')
+    version('3.9.0', '1f3930db56b4065aaf214ea758ddff1a70bf19d45544cbdfd19d2787db4bfe0b')
     version('3.8.2', '1e7d20d20eb26da307d36017461fe4a55f40e947e232739179dbe6412e22ed13')
     version('3.8.0', 'c58ccc4e852d1da01112466c48efa41f0839649f3a265925788237d76cd3d963')
     version('3.7.4', '2fb782844e3bc265a8d181c3c3e2632a4ca073111c874c654f1365d33ca2eb8a')
@@ -48,8 +48,7 @@ class Slepc(Package):
     variant('arpack', default=True, description='Enables Arpack wrappers')
 
     # NOTE: make sure PETSc and SLEPc use the same python.
-    #depends_on('python@2.6:2.8', type='build')
-    depends_on('python', type='build')
+    depends_on('python@2.6:2.8', type='build')
     # Cannot mix release and development versions of SLEPc and PETSc:
     depends_on('petsc@develop', when='@develop')
     depends_on('petsc@3.9:3.9.99', when='@3.9:3.9.99')
@@ -93,15 +92,6 @@ class Slepc(Package):
             make('test', parallel=False)
 
         make('install', parallel=False)
-
-    def setup_environment(self, spack_env, run_env):
-        # configure fails if these env vars are set outside of Spack
-        spack_env.unset('SLEPC_DIR')
-        spack_env.unset('PYTHONPATH')
-        spack_env.unset('PYTHONHOME')
-
-        # Set PETSC_DIR in the module file
-        run_env.set('SLEPC_DIR', self.prefix)
 
     def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
         # set up SLEPC_DIR for everyone using SLEPc package
