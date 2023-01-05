@@ -13,14 +13,15 @@ class Uflacs(Package):
     homepage = "https://bitbucket.org/fenics-project/uflacs-deprecated"
     url      = "https://bitbucket.org/fenics-project/uflacs-deprecated/downloads/uflacs-1.6.0.tar.gz"
 
+    version('1.7.0dev', git='https://bitbucket.org/fenics-project/uflacs-deprecated', commit='073fd2bb24bef7929bf6c12b55b78904311a9245')
     version('1.6.0','33bf5a51de9be4403a2b7dde5e4f3afa')
     
-
     extends('python')
     depends_on('py-setuptools', type="build")
     depends_on('py-numpy', type=("build","run"))
     depends_on('py-six', type=("build","run"))
     depends_on('ufl@1.6.0', type=("build","run"), when='@1.6.0')
+    depends_on('ufl@1.7.0dev', type=("build","run"), when='@1.7.0dev')
     
     def install(self, spec, prefix):
         python('setup.py', 'install', '--prefix={0}'.format(prefix))

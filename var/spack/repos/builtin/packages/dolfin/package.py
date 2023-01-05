@@ -15,14 +15,15 @@ class Dolfin(Package):
 
     version('2016.2.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-2016.2.0')
     version('2016.1.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-2016.1.0')
-    version('1.6.0', git='https://bitbucket.org/fenics-project/dolfin', tag='dolfin-1.6.0')
     version('1.7.0dev', git='https://bitbucket.org/fenics-project/dolfin', branch='jan/fix-slow-real')
 
-    for ver in ['@2016.2.0','@2016.1.0','@1.7.0dev','@1.6.0'] :
+    for ver in ['@2016.2.0','@2016.1.0','@1.7.0dev'] :
         depends_on('fiat{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('instant{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('ufl{0}'.format(ver), type=("build","run"), when=ver)
         depends_on('ffc{0}'.format(ver), type=("build","run"), when=ver)
+
+    depends_on('uflacs@1.7.0dev', type=("build","run"), when='@1.7.0dev')
 
     extends('python')
     #depends_on('python@2.6:2.7', type="alldeps")
@@ -36,41 +37,47 @@ class Dolfin(Package):
     depends_on('lapack')
     depends_on('mpi', when='+mpi')
 
-    depends_on('py-numpy', type="alldeps")
-    depends_on('py-ply', type="alldeps")
-    depends_on('py-six', type="alldeps")
-    depends_on('py-sympy', type="alldeps")
+    depends_on('py-numpy', type=('build', 'run'))
+    depends_on('py-ply', type=('build', 'run'))
+    depends_on('py-six', type=('build', 'run'))
+    depends_on('py-sympy', type=('build', 'run'))
+    depends_on('py-scipy', type=('build', 'run'))
 
-    depends_on('py-mpi4py', when='+mpi', type="alldeps")
+    depends_on('py-mpi4py', when='+mpi', type=('build', 'run'))
 
     depends_on('petsc', when='+petsc')
     depends_on('slepc', when='+slepc')
-    depends_on('py-petsc4py', when='+petsc4py', type="alldeps")
-    depends_on('py-slepc4py', when='+slepc4py', type="alldeps")
+    depends_on('py-petsc4py', when='+petsc4py', type=('build', 'run'))
+    depends_on('py-slepc4py', when='+slepc4py', type=('build', 'run'))
 
-    depends_on('petsc@:3.6.9', when='@:1.7.0+petsc')
-    depends_on('slepc@:3.6.9', when='@:1.7.0+slepc')
-    depends_on('py-petsc4py@:3.6.9', when='@:1.7+petsc4py', type="alldeps")
-    depends_on('py-slepc4py@:3.6.9', when='@:1.7+slepc4py', type="alldeps")
+#    depends_on('petsc', when='@2016.0.0:+petsc')
+#    depends_on('slepc', when='@2016.0.0:+slepc')
+#    depends_on('py-petsc4py', when='@2016.0.0:+petsc4py', type=('build', 'run'))
+#    depends_on('py-slepc4py', when='@2016.0.0:+slepc4py', type=('build', 'run'))
 
-    depends_on('py-matplotlib', type="alldeps")
-    depends_on('py-sphinx@1.0.1:', when='+doc', type="alldeps")
+    depends_on('petsc@:3.6.9', when='@1.7.0dev+petsc')
+    depends_on('slepc@:3.6.9', when='@1.7.0dev+slepc')
+    depends_on('py-petsc4py@:3.6.9', when='@1.7.0dev+petsc4py', type=('build', 'run'))
+    depends_on('py-slepc4py@:3.6.9', when='@1.7.0dev+slepc4py', type=('build', 'run'))
 
-    depends_on('hdf5@:1.9.0', when='@:1.8+hdf5')
+    depends_on('py-matplotlib', type=('build', 'run'))
+    depends_on('py-sphinx@1.0.1:', when='+doc', type=('build', 'run'))
+
+    depends_on('hdf5@:1.9.0', when='@1.7.0dev+hdf5')
     depends_on('hdf5', when='@2016.0.0:+hdf5')
 
     depends_on('scotch', when='+scotch')
     depends_on('trilinos', when='+trilinos')
 
-    depends_on('vtk+opengl2+sw', when='@2016.0.0:+vtk', type="alldeps")
-    depends_on('vtk@5.10.1+opengl2+sw', when='@:1.8+vtk', type="alldeps")
+    depends_on('vtk+opengl2+sw', when='@2016.0.0:+vtk')
+    depends_on('vtk@5.10.1+opengl2+sw', when='@1.7.0dev+vtk')
 
     depends_on('suite-sparse', when='+suitesparse')
 
     # This are the build dependencies
-    depends_on('py-setuptools', type="alldeps")
-    depends_on('cmake@2.8.12:', type="alldeps")
-    depends_on('swig', type="alldeps")
+    depends_on('py-setuptools', type='build')
+    depends_on('cmake@2.8.12:', type=('build', 'run'))
+    depends_on('swig', type=('build', 'run'))
 
     variant('petsc',        default=True,  description='Compile with PETSc')
     variant('hdf5',         default=True,  description='Compile with HDF5')
@@ -78,7 +85,7 @@ class Dolfin(Package):
     variant('slepc',        default=True,  description='Compile with SLEPc')
     variant('trilinos',     default=True,  description='Compile with Trilinos')
     variant('suitesparse',  default=True,  description='Compile with SuiteSparse solvers')
-    variant('vtk',          default=True, description='Compile with VTK')
+    variant('vtk',          default=False, description='Compile with VTK')
     variant('mpi',          default=True,  description='Enables the distributed memory support')
     variant('shared',       default=True,  description='Enables the build of shared libraries')
     variant('debug',        default=False, description='Builds a debug version of the libraries')

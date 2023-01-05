@@ -214,6 +214,8 @@ HDF5 version {version} {version}
             return "{0}/hdf5-{1}/hdf5-{2}.tar.gz".format(base_url, version.up_to(2), version)
         elif version < Version("1.7"):
             return "{0}/hdf5-{1}/hdf5-{2}/src/hdf5-{2}.tar.gz".format(base_url, version.up_to(2), version)
+        elif version < Version("1.9"):
+            return "{0}/hdf5-{1}/hdf5-{2}/src/hdf5-{2}.tar.gz".format(base_url, version.up_to(2), version)
         elif version < Version("1.10"):
             return "{0}/hdf5-{1}/src/hdf5-{1}.tar.gz".format(base_url, version)
         else:

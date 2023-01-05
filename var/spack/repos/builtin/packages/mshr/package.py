@@ -23,7 +23,6 @@ class Mshr(Package):
         depends_on('dolfin{0}'.format(ver), when=ver)
 
     extends('python')
-    #depends_on('python@2.6:2.7', type="alldeps")
 
     depends_on('boost')
     depends_on('gmp')
@@ -31,9 +30,9 @@ class Mshr(Package):
     depends_on('mpi')
 
     # This are the build dependencies
-    depends_on('py-setuptools', type="alldeps")
-    depends_on('cmake@2.8.12:', type="alldeps")
-    depends_on('swig', type="alldeps")
+    depends_on('py-setuptools', type=('build','run'))
+    depends_on('cmake@2.8.12:', type=('build','run'))
+    depends_on('swig', type=('build','run'))
 
     def cmake_is_on(self, option):
         return 'ON' if option in self.spec else 'OFF'
